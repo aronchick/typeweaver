@@ -1,7 +1,8 @@
 {
+  "schema_id": "typeweaver.report_card.v1",
   "report_version": "phase1-v1",
-  "generated_at_utc": "unix:1772984019",
-  "font_id": "font-67980c9dfd1ca757",
+  "generated_at_utc": "unix:0",
+  "font_id": "font-de79ad5b74ad40f2",
   "font_family": "AlphaSans",
   "profile_metrics": [
     {

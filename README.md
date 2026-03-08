@@ -40,12 +40,12 @@ cargo run -- ingest fixtures/fonts --registry-root fixtures/sample-output
 Run a benchmark profile for one font id:
 
 ```bash
-cargo run -- bench font-67980c9dfd1ca757 --profile web_light_default --registry-root fixtures/sample-output
+cargo run -- bench font-de79ad5b74ad40f2 --profile web_light_default --registry-root fixtures/sample-output
 ```
 
 This produces:
 - `fixtures/sample-output/registry.json`
-- `fixtures/sample-output/reports/font-67980c9dfd1ca757-web_light_default.json`
+- `fixtures/sample-output/reports/font-de79ad5b74ad40f2-web_light_default.json`
 
 ## Phase 1 corpus
 The fixed Latin corpus includes:
