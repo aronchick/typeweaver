@@ -1,0 +1,4 @@
+model = "gpt-5.4"
+
+[sandbox_workspace_write]
+network_access = false
