@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeWeaver</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    font-size: 12px;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 6px;
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .drop-zone input[type="file"] { display: none; }
+  select, button {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    font-weight: 500;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:hover td { background: rgba(88, 166, 255, 0.04); }
+  tr.selected td { background: rgba(88, 166, 255, 0.1); }
+  .status-approved { color: var(--green); }
+  .status-rejected { color: var(--red); }
+  .status-quarantined { color: var(--yellow); }
+  .bench-panel { display: none; }
+  .bench-panel.visible { display: block; }
+  .row-controls { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  pre.report-output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 12px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-size: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+  }
+  .msg { margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<h1>TypeWeaver &mdash; Typography Robustness Lab</h1>
+<p class="subtitle">Font ingestion, benchmarking, and OCR scoring</p>
+
+<div class="panel">
+  <h2>Upload Fonts</h2>
+  <div class="drop-zone" id="dropZone">
+    <p>Drag &amp; drop font files here, or click to browse</p>
+    <p style="font-size:11px; margin-top:8px">.ttf, .otf, .woff, .woff2</p>
+    <input type="file" id="fileInput" multiple accept=".ttf,.otf,.woff,.woff2">
+  </div>
+  <div class="row-controls" style="margin-top:12px">
+    <label style="color:var(--text-muted)">License:</label>
+    <select id="licenseSelect">
+      <option value="MIT">MIT</option>
+      <option value="Apache-2.0">Apache 2.0</option>
+      <option value="CC0">CC0</option>
+      <option value="Public Domain">Public Domain</option>
+      <option value="OFL">OFL</option>
+      <option value="Unknown">Unknown</option>
+    </select>
+    <button class="primary" id="uploadBtn" disabled>Upload</button>
+  </div>
+  <div class="msg" id="uploadMsg"></div>
+</div>
+
+<div class="panel">
+  <h2>Font Registry</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Filename</th>
+        <th>Family</th>
+        <th>License</th>
+        <th>Status</th>
+        <th>Size</th>
+      </tr>
+    </thead>
+    <tbody id="registryBody">
+      <tr><td colspan="6" style="color:var(--text-muted)">Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="panel bench-panel" id="benchPanel">
+  <h2>Benchmark: <span id="benchFontId"></span></h2>
+  <div class="row-controls">
+    <label style="color:var(--text-muted)">Profile:</label>
+    <select id="profileSelect">
+      <option value="web_light_default">web_light_default</option>
+      <option value="mobile_dark_low_contrast">mobile_dark_low_contrast</option>
+    </select>
+    <button class="primary" id="runBenchBtn">Run Benchmark</button>
+  </div>
+  <pre class="report-output" id="reportOutput"></pre>
+</div>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const uploadBtn = document.getElementById('uploadBtn');
+const uploadMsg = document.getElementById('uploadMsg');
+let selectedFiles = [];
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  selectedFiles = Array.from(e.dataTransfer.files);
+  uploadBtn.disabled = selectedFiles.length === 0;
+  dropZone.querySelector('p').textContent = selectedFiles.map(f => f.name).join(', ');
+});
+fileInput.addEventListener('change', () => {
+  selectedFiles = Array.from(fileInput.files);
+  uploadBtn.disabled = selectedFiles.length === 0;
+  dropZone.querySelector('p').textContent = selectedFiles.map(f => f.name).join(', ');
+});
+
+uploadBtn.addEventListener('click', async () => {
+  if (selectedFiles.length === 0) return;
+  uploadBtn.disabled = true;
+  uploadMsg.textContent = 'Uploading...';
+  const fd = new FormData();
+  selectedFiles.forEach(f => fd.append('file', f));
+  try {
+    const resp = await fetch('/api/fonts/ingest', { method: 'POST', body: fd });
+    const data = await resp.json();
+    uploadMsg.textContent = resp.ok
+      ? `Ingested ${data.ingested} file(s), registry total: ${data.total}`
+      : `Error: ${data.error}`;
+    if (resp.ok) { loadRegistry(); selectedFiles = []; dropZone.querySelector('p').textContent = 'Drag & drop font files here, or click to browse'; }
+  } catch (e) { uploadMsg.textContent = 'Upload failed: ' + e.message; }
+  uploadBtn.disabled = false;
+});
+
+let currentFontId = null;
+
+async function loadRegistry() {
+  try {
+    const resp = await fetch('/api/fonts');
+    const data = await resp.json();
+    const tbody = document.getElementById('registryBody');
+    if (!data.assets || data.assets.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted)">No fonts registered. Upload some above.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.assets.map(a => {
+      const sc = 'status-' + a.status;
+      const size = a.file_size_bytes >= 1024 ? (a.file_size_bytes / 1024).toFixed(1) + ' KB' : a.file_size_bytes + ' B';
+      return `<tr data-id="${a.id}" style="cursor:pointer">
+        <td>${a.id}</td>
+        <td>${a.file_name}</td>
+        <td>${a.family_name || '-'}</td>
+        <td>${a.license_normalized}</td>
+        <td class="${sc}">${a.status}</td>
+        <td>${size}</td>
+      </tr>`;
+    }).join('');
+    tbody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', () => selectFont(row.dataset.id));
+    });
+  } catch (e) {
+    document.getElementById('registryBody').innerHTML = '<tr><td colspan="6" style="color:var(--red)">Failed to load registry</td></tr>';
+  }
+}
+
+function selectFont(id) {
+  currentFontId = id;
+  document.querySelectorAll('#registryBody tr').forEach(r => r.classList.toggle('selected', r.dataset.id === id));
+  document.getElementById('benchFontId').textContent = id;
+  document.getElementById('benchPanel').classList.add('visible');
+  document.getElementById('reportOutput').style.display = 'none';
+}
+
+document.getElementById('runBenchBtn').addEventListener('click', async () => {
+  if (!currentFontId) return;
+  const profile = document.getElementById('profileSelect').value;
+  const out = document.getElementById('reportOutput');
+  out.style.display = 'block';
+  out.textContent = 'Running benchmark...';
+  try {
+    const resp = await fetch(`/api/fonts/${currentFontId}/report?profile=${profile}`);
+    const text = await resp.text();
+    out.textContent = resp.ok ? text : 'Error: ' + text;
+  } catch (e) { out.textContent = 'Error: ' + e.message; }
+});
+
+loadRegistry();
+</script>
+</body>
+</html>
