@@ -1,0 +1,16 @@
+[Unit]
+Description=TypeWeaver Typography Robustness Lab
+After=network.target
+
+[Service]
+Type=simple
+User=typeweaver
+Group=typeweaver
+WorkingDirectory=/opt/typeweaver
+ExecStart=/usr/local/bin/typeweaver serve --registry-root /var/lib/typeweaver --host 127.0.0.1 --port 3000
+Restart=on-failure
+RestartSec=5
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target
