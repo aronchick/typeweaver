@@ -7,7 +7,7 @@ Type=simple
 User=typeweaver
 Group=typeweaver
 WorkingDirectory=/opt/typeweaver
-ExecStart=/usr/local/bin/typeweaver serve --registry-root /var/lib/typeweaver --host 127.0.0.1 --port 3000
+ExecStart=/opt/typeweaver/typeweaver serve --registry-root /opt/typeweaver/.typeweaver --host 0.0.0.0 --port 3500
 Restart=on-failure
 RestartSec=5
 Environment=RUST_LOG=info
