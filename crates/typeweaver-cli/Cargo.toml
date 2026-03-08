@@ -9,3 +9,5 @@ typeweaver-core = { path = "../typeweaver-core" }
 typeweaver-registry = { path = "../typeweaver-registry" }
 typeweaver-render = { path = "../typeweaver-render" }
 typeweaver-bench = { path = "../typeweaver-bench" }
+typeweaver-api = { path = "../typeweaver-api" }
+tokio = { version = "1", features = ["full"] }

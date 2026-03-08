@@ -29,6 +29,7 @@ fn run() -> Result<(), String> {
         "list" => handle_list(&args[1..]),
         "profiles" => handle_profiles(&args[1..]),
         "bench" => handle_bench(&args[1..]),
+        "serve" => handle_serve(&args[1..]),
         other => Err(format!("unknown command '{other}'\n\n{}", usage())),
     }
 }
@@ -270,6 +271,86 @@ fn handle_bench(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+fn handle_serve(args: &[String]) -> Result<(), String> {
+    if args.first().is_some_and(|arg| is_help_flag(arg)) {
+        println!("{}", serve_usage());
+        return Ok(());
+    }
+
+    let opts = parse_serve_options(args)?;
+
+    if !opts.registry_root.exists() {
+        fs::create_dir_all(&opts.registry_root).map_err(|e| {
+            format!(
+                "failed to create registry root {}: {e}",
+                opts.registry_root.display()
+            )
+        })?;
+    }
+
+    typeweaver_api::telemetry::init_tracer();
+
+    let rt = tokio::runtime::Runtime::new().map_err(|e| format!("failed to start runtime: {e}"))?;
+    rt.block_on(async {
+        typeweaver_api::serve(opts.registry_root, &opts.host, opts.port)
+            .await
+            .map_err(|e| format!("server error: {e}"))
+    })
+}
+
+struct ServeOptions {
+    registry_root: PathBuf,
+    host: String,
+    port: u16,
+}
+
+fn parse_serve_options(args: &[String]) -> Result<ServeOptions, String> {
+    let mut idx = 0usize;
+    let mut registry_root = PathBuf::from(".typeweaver");
+    let mut host = "0.0.0.0".to_string();
+    let mut port: u16 = 3000;
+
+    while idx < args.len() {
+        match args[idx].as_str() {
+            "--registry-root" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| "missing value for --registry-root".to_string())?;
+                registry_root = PathBuf::from(value);
+                idx += 2;
+            }
+            "--host" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| "missing value for --host".to_string())?;
+                host = value.clone();
+                idx += 2;
+            }
+            "--port" => {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| "missing value for --port".to_string())?;
+                port = value
+                    .parse()
+                    .map_err(|_| format!("invalid port: {value}"))?;
+                idx += 2;
+            }
+            other if other.starts_with('-') => {
+                return Err(format!("unknown option for serve: {other}"));
+            }
+            other => {
+                return Err(format!("unexpected argument for serve: {other}"));
+            }
+        }
+    }
+
+    Ok(ServeOptions {
+        registry_root,
+        host,
+        port,
+    })
+}
+
 fn relative_report_path(font_id: &str, profile: BenchmarkProfile) -> String {
     format!("reports/{}/{}/report.json", font_id, profile.as_str())
 }
@@ -379,12 +460,14 @@ fn usage() -> String {
         "  cargo run -p typeweaver-cli -- list [--registry-root <dir>]",
         "  cargo run -p typeweaver-cli -- profiles",
         "  cargo run -p typeweaver-cli -- bench <font-id> --profile <web_light_default|mobile_dark_low_contrast> [--registry-root <dir>] [--out <file>]",
+        "  cargo run -p typeweaver-cli -- serve [--registry-root <dir>] [--host <addr>] [--port <port>]",
         "",
         "Use subcommand help:",
         "  cargo run -p typeweaver-cli -- ingest --help",
         "  cargo run -p typeweaver-cli -- list --help",
         "  cargo run -p typeweaver-cli -- profiles --help",
         "  cargo run -p typeweaver-cli -- bench --help",
+        "  cargo run -p typeweaver-cli -- serve --help",
     ]
     .join("\n")
 }
@@ -422,6 +505,19 @@ fn profiles_usage() -> String {
         "  cargo run -p typeweaver-cli -- profiles",
         "",
         "Lists benchmark profiles and descriptions.",
+    ]
+    .join("\n")
+}
+
+fn serve_usage() -> String {
+    [
+        "Usage:",
+        "  cargo run -p typeweaver-cli -- serve [--registry-root <dir>] [--host <addr>] [--port <port>]",
+        "",
+        "Options:",
+        "  --registry-root <dir>  Root containing registry/ and reports/ (default: .typeweaver)",
+        "  --host <addr>          Bind address (default: 0.0.0.0)",
+        "  --port <port>          Bind port (default: 3000)",
     ]
     .join("\n")
 }
