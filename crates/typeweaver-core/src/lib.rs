@@ -166,6 +166,7 @@ pub struct ProfileMetrics {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ReportCard {
+    pub schema_id: String,
     pub report_version: String,
     pub generated_at_utc: String,
     pub font_id: String,
@@ -195,6 +196,10 @@ impl ReportCard {
     pub fn to_json_pretty(&self) -> String {
         let mut json = String::new();
         json.push_str("{\n");
+        json.push_str(&format!(
+            "  \"schema_id\": \"{}\",\n",
+            escape_json(&self.schema_id)
+        ));
         json.push_str(&format!(
             "  \"report_version\": \"{}\",\n",
             escape_json(&self.report_version)
@@ -290,6 +295,7 @@ mod tests {
     #[test]
     fn report_serialization_contains_expected_keys() {
         let report = ReportCard {
+            schema_id: "typeweaver.report_card.v1".to_string(),
             report_version: "phase1-v1".to_string(),
             generated_at_utc: "2026-03-08T00:00:00Z".to_string(),
             font_id: "font-123".to_string(),
@@ -306,6 +312,7 @@ mod tests {
         };
 
         let json = report.to_json_pretty();
+        assert!(json.contains("\"schema_id\": \"typeweaver.report_card.v1\""));
         assert!(json.contains("\"font_id\": \"font-123\""));
         assert!(json.contains("\"profile\": \"web_light_default\""));
         assert!(json.contains("\"corpus_line_count\": 5"));

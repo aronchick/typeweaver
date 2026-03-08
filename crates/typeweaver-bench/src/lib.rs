@@ -1,5 +1,3 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use typeweaver_core::{BenchmarkProfile, FontAsset, ProfileMetrics, REPORTS_DIR_NAME, ReportCard};
 use typeweaver_render::render_fixed_latin_corpus;
 
@@ -51,14 +49,10 @@ pub fn run_report(asset: &FontAsset, profile: Option<BenchmarkProfile>) -> Repor
             .collect(),
     };
 
-    let now = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
-
     ReportCard {
+        schema_id: "typeweaver.report_card.v1".to_string(),
         report_version: "phase1-v1".to_string(),
-        generated_at_utc: format!("unix:{now}"),
+        generated_at_utc: "unix:0".to_string(),
         font_id: asset.id.clone(),
         font_family: asset.family_name.clone(),
         profile_metrics,
@@ -102,7 +96,14 @@ mod tests {
     fn report_contains_json_output() {
         let report = run_report(&fixture_asset(), Some(BenchmarkProfile::WebLightDefault));
         let json = report.to_json_pretty();
+        assert!(json.contains("\"schema_id\": \"typeweaver.report_card.v1\""));
         assert!(json.contains("\"font_id\": \"font-fixture\""));
         assert!(json.contains("\"profile\": \"web_light_default\""));
+    }
+
+    #[test]
+    fn report_generation_stamp_is_deterministic() {
+        let report = run_report(&fixture_asset(), Some(BenchmarkProfile::WebLightDefault));
+        assert_eq!(report.generated_at_utc, "unix:0");
     }
 }
