@@ -3,7 +3,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use typeweaver_core::{
-    escape_json, AssetStatus, FontAsset, NormalizedLicense, Registry, REGISTRY_FILE_NAME,
+    AssetStatus, FontAsset, NormalizedLicense, REGISTRY_FILE_NAME, Registry, escape_json,
 };
 
 #[derive(Debug)]
@@ -95,7 +95,9 @@ pub fn classify_status(license: &NormalizedLicense) -> (AssetStatus, String) {
         NormalizedLicense::PublicDomain
         | NormalizedLicense::Cc0
         | NormalizedLicense::Mit
-        | NormalizedLicense::Apache20 => (AssetStatus::Approved, "approved license class".to_string()),
+        | NormalizedLicense::Apache20 => {
+            (AssetStatus::Approved, "approved license class".to_string())
+        }
         NormalizedLicense::Ofl => (
             AssetStatus::Rejected,
             "OFL is rejected in Phase 1".to_string(),
@@ -176,7 +178,10 @@ pub fn load_registry_at(root: &Path) -> Result<Registry, RegistryError> {
     parse_registry_json(&raw)
 }
 
-pub fn find_asset<'a>(registry: &'a Registry, font_id: &str) -> Result<&'a FontAsset, RegistryError> {
+pub fn find_asset<'a>(
+    registry: &'a Registry,
+    font_id: &str,
+) -> Result<&'a FontAsset, RegistryError> {
     registry
         .assets
         .iter()
@@ -190,7 +195,10 @@ pub fn registry_to_json(registry: &Registry) -> String {
     for (idx, asset) in registry.assets.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"id\": \"{}\",\n", escape_json(&asset.id)));
-        out.push_str(&format!("      \"path\": \"{}\",\n", escape_json(&asset.path)));
+        out.push_str(&format!(
+            "      \"path\": \"{}\",\n",
+            escape_json(&asset.path)
+        ));
         out.push_str(&format!(
             "      \"file_name\": \"{}\",\n",
             escape_json(&asset.file_name)
@@ -213,7 +221,10 @@ pub fn registry_to_json(registry: &Registry) -> String {
             "      \"license_normalized\": \"{}\",\n",
             asset.license_normalized.as_str()
         ));
-        out.push_str(&format!("      \"status\": \"{}\",\n", asset.status.as_str()));
+        out.push_str(&format!(
+            "      \"status\": \"{}\",\n",
+            asset.status.as_str()
+        ));
         out.push_str(&format!(
             "      \"status_reason\": \"{}\",\n",
             escape_json(&asset.status_reason)
@@ -246,7 +257,8 @@ pub fn parse_registry_json(raw: &str) -> Result<Registry, RegistryError> {
         let style_name = read_string_field(&object, "style_name")?;
         let license_raw = read_string_field(&object, "license_raw")?;
         let license_normalized = parse_license(
-            &read_string_field(&object, "license_normalized")?.unwrap_or_else(|| "unknown".to_string()),
+            &read_string_field(&object, "license_normalized")?
+                .unwrap_or_else(|| "unknown".to_string()),
         );
         let status = parse_status(
             &read_string_field(&object, "status")?.unwrap_or_else(|| "quarantined".to_string()),
@@ -465,7 +477,10 @@ mod tests {
             normalize_license(Some("Open Font License")),
             NormalizedLicense::Ofl
         );
-        assert_eq!(normalize_license(Some("GPLv3")), NormalizedLicense::GplVariant);
+        assert_eq!(
+            normalize_license(Some("GPLv3")),
+            NormalizedLicense::GplVariant
+        );
         assert_eq!(normalize_license(None), NormalizedLicense::Unknown);
     }
 

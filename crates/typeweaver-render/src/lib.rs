@@ -16,7 +16,8 @@ pub fn render_fixed_latin_corpus(asset: &FontAsset) -> RenderedCorpus {
         .map(|(idx, line)| {
             format!(
                 "[{}:{}] {}",
-                asset.family_name
+                asset
+                    .family_name
                     .as_deref()
                     .unwrap_or(asset.file_name.as_str()),
                 idx + 1,

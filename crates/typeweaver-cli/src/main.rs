@@ -99,9 +99,11 @@ fn handle_bench(args: &[String]) -> Result<(), String> {
     let output_path = parse_flag_value(args, "--out")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            registry_root
-                .join(REPORTS_DIR_NAME)
-                .join(format!("{}-{}.json", font_id, profile.as_str()))
+            registry_root.join(REPORTS_DIR_NAME).join(format!(
+                "{}-{}.json",
+                font_id,
+                profile.as_str()
+            ))
         });
 
     if let Some(parent) = output_path.parent() {

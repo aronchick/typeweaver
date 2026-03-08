@@ -1,8 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use typeweaver_core::{
-    BenchmarkProfile, FontAsset, ProfileMetrics, ReportCard, REPORTS_DIR_NAME,
-};
+use typeweaver_core::{BenchmarkProfile, FontAsset, ProfileMetrics, REPORTS_DIR_NAME, ReportCard};
 use typeweaver_render::render_fixed_latin_corpus;
 
 pub fn run_profile(asset: &FontAsset, profile: BenchmarkProfile) -> ProfileMetrics {
