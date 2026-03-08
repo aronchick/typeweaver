@@ -21,31 +21,75 @@ Out of scope in this phase:
 - `crates/typeweaver-registry`: ingestion, license normalization, registry persistence
 - `crates/typeweaver-render`: fixed Latin corpus rendering helpers
 - `crates/typeweaver-bench`: profile benchmark runner and report builder
-- `crates/typeweaver-cli`: CLI entrypoint (`ingest`, `bench`)
+- `crates/typeweaver-cli`: CLI entrypoint (`ingest`, `list`, `profiles`, `bench`)
 
 ## Quickstart
 
-Run all tests:
+Run commands from the workspace root (`/opt/typeweaver`).
+
+Run quality checks:
 
 ```bash
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
 cargo test
 ```
 
-Ingest local fonts and write `registry.json`:
+Ingest local fonts:
 
 ```bash
-cargo run -- ingest fixtures/fonts --registry-root fixtures/sample-output
+cargo run -- ingest fixtures/fonts
 ```
 
-Run a benchmark profile for one font id:
+Expected output shape:
+```text
+ingested=5 approved=2 rejected=2 quarantined=1 registry=.typeweaver/registry/registry.json
+```
+
+List ingested assets:
 
 ```bash
-cargo run -- bench font-de79ad5b74ad40f2 --profile web_light_default --registry-root fixtures/sample-output
+cargo run -- list
 ```
 
-This produces:
-- `fixtures/sample-output/registry.json`
-- `fixtures/sample-output/reports/font-de79ad5b74ad40f2-web_light_default.json`
+Expected first line:
+```text
+font_id    family    style    license    status
+```
+
+List available benchmark profiles:
+
+```bash
+cargo run -- profiles
+```
+
+Expected rows include:
+```text
+web_light_default
+mobile_dark_low_contrast
+```
+
+Run one benchmark profile for a font id:
+
+```bash
+cargo run -- bench font-de79ad5b74ad40f2 --profile web_light_default
+```
+
+Expected output shape:
+```text
+report=.typeweaver/reports/font-de79ad5b74ad40f2/web_light_default/report.json preview=.typeweaver/reports/font-de79ad5b74ad40f2/web_light_default/preview.txt
+```
+
+### Output layout
+By default, commands write under `.typeweaver`:
+
+- `.typeweaver/registry/registry.json`
+- `.typeweaver/reports/<font-id>/<profile>/report.json`
+- `.typeweaver/reports/<font-id>/<profile>/preview.txt`
+
+You can change the root with `--registry-root <dir>` on `ingest`, `list`, and `bench`.
+
+Sample generated artifacts are included under `fixtures/sample-output/` and match the fixture benchmark example above (`font-de79ad5b74ad40f2` + `web_light_default`).
 
 ## Phase 1 corpus
 The fixed Latin corpus includes:
