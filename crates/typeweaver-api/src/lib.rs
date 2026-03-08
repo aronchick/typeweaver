@@ -44,7 +44,7 @@ fn app(registry_root: PathBuf) -> Router {
         .route("/api/fonts/{id}/report", get(handle_report))
         .route("/healthz", get(handle_healthz))
         .route("/api/health", get(handle_healthz))
-        .route("/okz", get(handle_healthz))
+        .route("/okz", get(handle_okz))
         .route("/varz", get(handle_varz))
         .fallback(handle_static)
         .with_state(state)
@@ -236,6 +236,12 @@ async fn handle_report(
     json_response(StatusCode::OK, &json)
 }
 
+/// Shallow liveness probe — no I/O, always 200. Used by load balancers.
+async fn handle_okz() -> Response {
+    json_response(StatusCode::OK, "{\"ok\":true}")
+}
+
+/// Deep health check — verifies registry is readable, reports uptime + font count.
 async fn handle_healthz() -> Response {
     json_response(StatusCode::OK, "{\"status\": \"ok\"}")
 }
