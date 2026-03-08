@@ -1,0 +1,9 @@
+# TypeWeaver Phase 1 Preview
+font_id: font-de79ad5b74ad40f2
+font_file: AlphaSans-Regular.ttf
+
+[AlphaSans:1] ABCDEFGHIJKLMNOPQRSTUVWXYZ
+[AlphaSans:2] abcdefghijklmnopqrstuvwxyz
+[AlphaSans:3] 0123456789
+[AlphaSans:4] !@#$%^&*()-_=+[]{};:'",.<>/?\|`~
+[AlphaSans:5] O/0 I/l/1 S/5 B/8 rn/m cl/d
