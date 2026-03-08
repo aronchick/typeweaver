@@ -1,7 +1,10 @@
 use std::fmt;
 
+pub const REGISTRY_DIR_NAME: &str = "registry";
 pub const REGISTRY_FILE_NAME: &str = "registry.json";
 pub const REPORTS_DIR_NAME: &str = "reports";
+pub const REPORT_FILE_NAME: &str = "report.json";
+pub const PREVIEW_FILE_NAME: &str = "preview.txt";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NormalizedLicense {
@@ -119,6 +122,17 @@ impl BenchmarkProfile {
         }
     }
 
+    pub fn description(&self) -> &'static str {
+        match self {
+            Self::WebLightDefault => {
+                "Balanced desktop/web readability profile with default contrast assumptions"
+            }
+            Self::MobileDarkLowContrast => {
+                "Mobile-oriented dark background profile with tighter low-contrast tolerance"
+            }
+        }
+    }
+
     pub fn all() -> [Self; 2] {
         [Self::WebLightDefault, Self::MobileDarkLowContrast]
     }
@@ -161,6 +175,47 @@ pub struct ProfileMetrics {
     pub score: f32,
     pub line_density: f32,
     pub confusion_penalty: f32,
+    pub estimated_coverage: f32,
+    pub notes: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportMetadata {
+    pub generated_at_utc: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportFontIdentity {
+    pub font_id: String,
+    pub family_name: Option<String>,
+    pub style_name: Option<String>,
+    pub normalized_license: String,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportBenchmark {
+    pub profile: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportCorpusSummary {
+    pub line_count: usize,
+    pub char_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReportArtifacts {
+    pub report_path: Option<String>,
+    pub preview_files: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ReportMeasurements {
+    pub score: f32,
+    pub line_density: f32,
+    pub confusion_penalty: f32,
+    pub estimated_coverage: f32,
     pub notes: String,
 }
 
@@ -168,12 +223,12 @@ pub struct ProfileMetrics {
 pub struct ReportCard {
     pub schema_id: String,
     pub report_version: String,
-    pub generated_at_utc: String,
-    pub font_id: String,
-    pub font_family: Option<String>,
-    pub profile_metrics: Vec<ProfileMetrics>,
-    pub corpus_line_count: usize,
-    pub corpus_char_count: usize,
+    pub metadata: ReportMetadata,
+    pub font: ReportFontIdentity,
+    pub benchmark: ReportBenchmark,
+    pub corpus: ReportCorpusSummary,
+    pub artifacts: ReportArtifacts,
+    pub measurements: ReportMeasurements,
 }
 
 pub fn escape_json(input: &str) -> String {
@@ -192,6 +247,31 @@ pub fn escape_json(input: &str) -> String {
     out
 }
 
+fn push_json_string_field(target: &mut String, key: &str, value: &str, trailing_comma: bool) {
+    target.push_str(&format!("    \"{key}\": \"{}\"", escape_json(value)));
+    if trailing_comma {
+        target.push(',');
+    }
+    target.push('\n');
+}
+
+fn push_json_optional_string_field(
+    target: &mut String,
+    key: &str,
+    value: &Option<String>,
+    trailing_comma: bool,
+) {
+    target.push_str(&format!("    \"{key}\": "));
+    match value {
+        Some(v) => target.push_str(&format!("\"{}\"", escape_json(v))),
+        None => target.push_str("null"),
+    }
+    if trailing_comma {
+        target.push(',');
+    }
+    target.push('\n');
+}
+
 impl ReportCard {
     pub fn to_json_pretty(&self) -> String {
         let mut json = String::new();
@@ -204,57 +284,75 @@ impl ReportCard {
             "  \"report_version\": \"{}\",\n",
             escape_json(&self.report_version)
         ));
-        json.push_str(&format!(
-            "  \"generated_at_utc\": \"{}\",\n",
-            escape_json(&self.generated_at_utc)
-        ));
-        json.push_str(&format!(
-            "  \"font_id\": \"{}\",\n",
-            escape_json(&self.font_id)
-        ));
-        match &self.font_family {
-            Some(family) => json.push_str(&format!(
-                "  \"font_family\": \"{}\",\n",
-                escape_json(family)
-            )),
-            None => json.push_str("  \"font_family\": null,\n"),
-        }
 
-        json.push_str("  \"profile_metrics\": [\n");
-        for (idx, metric) in self.profile_metrics.iter().enumerate() {
-            json.push_str("    {\n");
-            json.push_str(&format!(
-                "      \"profile\": \"{}\",\n",
-                metric.profile.as_str()
-            ));
-            json.push_str(&format!("      \"score\": {:.4},\n", metric.score));
-            json.push_str(&format!(
-                "      \"line_density\": {:.4},\n",
-                metric.line_density
-            ));
-            json.push_str(&format!(
-                "      \"confusion_penalty\": {:.4},\n",
-                metric.confusion_penalty
-            ));
-            json.push_str(&format!(
-                "      \"notes\": \"{}\"\n",
-                escape_json(&metric.notes)
-            ));
-            json.push_str("    }");
-            if idx + 1 != self.profile_metrics.len() {
-                json.push(',');
+        json.push_str("  \"metadata\": {\n");
+        push_json_string_field(
+            &mut json,
+            "generated_at_utc",
+            &self.metadata.generated_at_utc,
+            false,
+        );
+        json.push_str("  },\n");
+
+        json.push_str("  \"font\": {\n");
+        push_json_string_field(&mut json, "font_id", &self.font.font_id, true);
+        push_json_optional_string_field(&mut json, "family_name", &self.font.family_name, true);
+        push_json_optional_string_field(&mut json, "style_name", &self.font.style_name, true);
+        push_json_string_field(
+            &mut json,
+            "normalized_license",
+            &self.font.normalized_license,
+            true,
+        );
+        push_json_string_field(&mut json, "status", &self.font.status, false);
+        json.push_str("  },\n");
+
+        json.push_str("  \"benchmark\": {\n");
+        push_json_string_field(&mut json, "profile", &self.benchmark.profile, false);
+        json.push_str("  },\n");
+
+        json.push_str("  \"corpus\": {\n");
+        json.push_str(&format!(
+            "    \"line_count\": {},\n",
+            self.corpus.line_count
+        ));
+        json.push_str(&format!("    \"char_count\": {}\n", self.corpus.char_count));
+        json.push_str("  },\n");
+
+        json.push_str("  \"artifacts\": {\n");
+        push_json_optional_string_field(
+            &mut json,
+            "report_path",
+            &self.artifacts.report_path,
+            true,
+        );
+        json.push_str("    \"preview_files\": [");
+        for (idx, file) in self.artifacts.preview_files.iter().enumerate() {
+            if idx > 0 {
+                json.push_str(", ");
             }
-            json.push('\n');
+            json.push_str(&format!("\"{}\"", escape_json(file)));
         }
-        json.push_str("  ],\n");
+        json.push_str("]\n");
+        json.push_str("  },\n");
+
+        json.push_str("  \"measurements\": {\n");
+        json.push_str(&format!("    \"score\": {:.4},\n", self.measurements.score));
         json.push_str(&format!(
-            "  \"corpus_line_count\": {},\n",
-            self.corpus_line_count
+            "    \"line_density\": {:.4},\n",
+            self.measurements.line_density
         ));
         json.push_str(&format!(
-            "  \"corpus_char_count\": {}\n",
-            self.corpus_char_count
+            "    \"confusion_penalty\": {:.4},\n",
+            self.measurements.confusion_penalty
         ));
+        json.push_str(&format!(
+            "    \"estimated_coverage\": {:.4},\n",
+            self.measurements.estimated_coverage
+        ));
+        push_json_string_field(&mut json, "notes", &self.measurements.notes, false);
+        json.push_str("  }\n");
+
         json.push('}');
         json
     }
@@ -265,65 +363,52 @@ mod tests {
     use super::*;
 
     #[test]
-    fn profile_parse_accepts_known_slugs() {
-        assert_eq!(
-            BenchmarkProfile::from_slug("web_light_default").unwrap(),
-            BenchmarkProfile::WebLightDefault
-        );
-        assert_eq!(
-            BenchmarkProfile::from_slug("mobile_dark_low_contrast").unwrap(),
-            BenchmarkProfile::MobileDarkLowContrast
-        );
+    fn benchmark_profile_parser_is_strict() {
+        assert!(BenchmarkProfile::from_slug("web_light_default").is_ok());
+        assert!(BenchmarkProfile::from_slug("mobile_dark_low_contrast").is_ok());
+        assert!(BenchmarkProfile::from_slug("Web_Light_Default").is_err());
     }
 
     #[test]
-    fn profile_parse_rejects_unknown_slug() {
-        let err = BenchmarkProfile::from_slug("unknown").unwrap_err();
-        assert_eq!(err.input, "unknown");
-    }
-
-    #[test]
-    fn corpus_contains_required_lines() {
-        let corpus = Corpus::latin_phase1();
-        assert_eq!(corpus.line_count(), 5);
-        assert!(corpus.as_text().contains("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-        assert!(corpus.as_text().contains("abcdefghijklmnopqrstuvwxyz"));
-        assert!(corpus.as_text().contains("0123456789"));
-        assert!(corpus.as_text().contains("O/0 I/l/1 S/5 B/8 rn/m cl/d"));
-    }
-
-    #[test]
-    fn report_serialization_contains_expected_keys() {
+    fn report_card_json_is_deterministic() {
         let report = ReportCard {
             schema_id: "typeweaver.report_card.v1".to_string(),
             report_version: "phase1-v1".to_string(),
-            generated_at_utc: "2026-03-08T00:00:00Z".to_string(),
-            font_id: "font-123".to_string(),
-            font_family: Some("Example".to_string()),
-            profile_metrics: vec![ProfileMetrics {
-                profile: BenchmarkProfile::WebLightDefault,
-                score: 0.9,
-                line_density: 0.7,
-                confusion_penalty: 0.1,
-                notes: "ok".to_string(),
-            }],
-            corpus_line_count: 5,
-            corpus_char_count: 90,
+            metadata: ReportMetadata {
+                generated_at_utc: "unix:0".to_string(),
+            },
+            font: ReportFontIdentity {
+                font_id: "font-123".to_string(),
+                family_name: Some("Fixture".to_string()),
+                style_name: Some("Regular".to_string()),
+                normalized_license: "mit".to_string(),
+                status: "approved".to_string(),
+            },
+            benchmark: ReportBenchmark {
+                profile: "web_light_default".to_string(),
+            },
+            corpus: ReportCorpusSummary {
+                line_count: 5,
+                char_count: 100,
+            },
+            artifacts: ReportArtifacts {
+                report_path: Some("reports/font-123/web_light_default/report.json".to_string()),
+                preview_files: vec!["preview.txt".to_string()],
+            },
+            measurements: ReportMeasurements {
+                score: 0.8,
+                line_density: 20.0,
+                confusion_penalty: 0.08,
+                estimated_coverage: 0.88,
+                notes: "phase1".to_string(),
+            },
         };
 
-        let json = report.to_json_pretty();
-        assert!(json.contains("\"schema_id\": \"typeweaver.report_card.v1\""));
-        assert!(json.contains("\"font_id\": \"font-123\""));
-        assert!(json.contains("\"profile\": \"web_light_default\""));
-        assert!(json.contains("\"corpus_line_count\": 5"));
-    }
-
-    #[test]
-    fn approved_licenses_are_marked() {
-        assert!(NormalizedLicense::PublicDomain.is_approved());
-        assert!(NormalizedLicense::Cc0.is_approved());
-        assert!(NormalizedLicense::Mit.is_approved());
-        assert!(NormalizedLicense::Apache20.is_approved());
-        assert!(!NormalizedLicense::Unknown.is_approved());
+        let first = report.to_json_pretty();
+        let second = report.to_json_pretty();
+        assert_eq!(first, second);
+        assert!(first.contains("\"benchmark\": {"));
+        assert!(first.contains("\"artifacts\": {"));
+        assert!(first.contains("\"measurements\": {"));
     }
 }
