@@ -1,7 +1,7 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::collections::HashSet;
 
 use typeweaver_core::{
     AssetStatus, FontAsset, NormalizedLicense, REGISTRY_FILE_NAME, Registry, escape_json,
@@ -54,17 +54,34 @@ pub fn normalize_license(raw: Option<&str>) -> NormalizedLicense {
         return NormalizedLicense::Ambiguous;
     }
 
+    if contains_any(
+        &normalized,
+        &[
+            "mixed license",
+            "mixed",
+            "dual license pack",
+            "dual-license pack",
+        ],
+    ) {
+        return NormalizedLicense::Mixed;
+    }
+
     let has_pd = normalized.contains("public domain") || contains_token(&normalized, "pd");
     let has_cc0 = normalized.contains("cc0") || normalized.contains("creative commons zero");
-    let has_mit =
-        contains_token(&normalized, "mit") || normalized.contains("mit license");
+    let has_mit = contains_token(&normalized, "mit") || normalized.contains("mit license");
     let has_apache = contains_token(&normalized, "apache")
         && contains_any(
             &normalized,
-            &["2.0", "version 2", "version 2.0", "apache-2", "apache 2"],
+            &[
+                "2.0",
+                "version 2",
+                "version 2.0",
+                "apache-2",
+                "apache 2",
+                "apache-2.0",
+            ],
         );
-    let has_ofl =
-        contains_token(&normalized, "ofl") || normalized.contains("open font license");
+    let has_ofl = contains_token(&normalized, "ofl") || normalized.contains("open font license");
     let has_gpl = contains_license_family_token(&normalized, "gpl")
         || contains_license_family_token(&normalized, "lgpl")
         || contains_license_family_token(&normalized, "agpl");
@@ -74,10 +91,6 @@ pub fn normalize_license(raw: Option<&str>) -> NormalizedLicense {
         .filter(|v| *v)
         .count();
     let rejected_count = [has_ofl, has_gpl].into_iter().filter(|v| *v).count();
-
-    if contains_any(&normalized, &["mixed license", "mixed", "dual license pack"]) {
-        return NormalizedLicense::Mixed;
-    }
 
     if approved_count + rejected_count > 1 {
         return NormalizedLicense::Mixed;
@@ -362,7 +375,7 @@ fn split_family_style_from_name(file_name: &str) -> (Option<String>, Option<Stri
         .trim_end_matches(".woff")
         .trim_end_matches(".woff2");
 
-    let normalized = base.replace('_', " ").replace('-', " ");
+    let normalized = base.replace(['_', '-'], " ");
     let mut parts: Vec<String> = normalized
         .split_whitespace()
         .map(|s| s.to_string())
@@ -423,10 +436,10 @@ fn split_objects(raw: &str) -> Vec<String> {
             depth += 1;
         } else if ch == '}' {
             depth -= 1;
-            if depth == 1 {
-                if let Some(s) = start.take() {
-                    objects.push(raw[s..=idx].to_string());
-                }
+            if depth == 1
+                && let Some(s) = start.take()
+            {
+                objects.push(raw[s..=idx].to_string());
             }
         }
     }
@@ -551,8 +564,18 @@ mod tests {
 
     #[test]
     fn normalize_license_avoids_partial_token_false_positives() {
-        assert_eq!(normalize_license(Some("Permit required")), NormalizedLicense::Unknown);
-        assert_eq!(normalize_license(Some("MIT OR Apache-2.0")), NormalizedLicense::Mixed);
+        assert_eq!(
+            normalize_license(Some("Permit required")),
+            NormalizedLicense::Unknown
+        );
+        assert_eq!(
+            normalize_license(Some("MIT OR Apache-2.0")),
+            NormalizedLicense::Mixed
+        );
+        assert_eq!(
+            normalize_license(Some("Dual-License Pack: MIT + OFL")),
+            NormalizedLicense::Mixed
+        );
         assert_eq!(
             normalize_license(Some("unknown provenance")),
             NormalizedLicense::Ambiguous
@@ -664,6 +687,28 @@ mod tests {
         let registry = ingest_dir(&tmp).unwrap();
         assert_eq!(registry.assets.len(), 1);
         assert_eq!(registry.assets[0].file_name, "A.ttf");
+
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn repeated_ingest_runs_are_idempotent() {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let tmp = std::env::temp_dir().join(format!("tw-idempotent-{nonce}"));
+        fs::create_dir_all(&tmp).unwrap();
+
+        fs::write(tmp.join("FixtureA.ttf"), b"fixture-a").unwrap();
+        fs::write(tmp.join("FixtureA.license"), "MIT").unwrap();
+        fs::write(tmp.join("FixtureB.otf"), b"fixture-b").unwrap();
+        fs::write(tmp.join("FixtureB.license"), "Unknown").unwrap();
+
+        let first = ingest_dir(&tmp).unwrap();
+        let second = ingest_dir(&tmp).unwrap();
+        assert_eq!(first, second);
+        assert_eq!(registry_to_json(&first), registry_to_json(&second));
 
         let _ = fs::remove_dir_all(&tmp);
     }
