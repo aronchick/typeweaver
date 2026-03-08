@@ -1,0 +1,11 @@
+[package]
+name = "typeweaver-cli"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+typeweaver-core = { path = "../typeweaver-core" }
+typeweaver-registry = { path = "../typeweaver-registry" }
+typeweaver-render = { path = "../typeweaver-render" }
+typeweaver-bench = { path = "../typeweaver-bench" }

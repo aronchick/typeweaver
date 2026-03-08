@@ -1,0 +1,13 @@
+[workspace]
+members = [
+  "crates/typeweaver-core",
+  "crates/typeweaver-registry",
+  "crates/typeweaver-render",
+  "crates/typeweaver-bench",
+  "crates/typeweaver-cli",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"

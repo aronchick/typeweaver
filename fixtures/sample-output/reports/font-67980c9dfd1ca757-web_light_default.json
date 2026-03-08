@@ -1,0 +1,17 @@
+{
+  "report_version": "phase1-v1",
+  "generated_at_utc": "unix:1772984019",
+  "font_id": "font-67980c9dfd1ca757",
+  "font_family": "AlphaSans",
+  "profile_metrics": [
+    {
+      "profile": "web_light_default",
+      "score": 0.7015,
+      "line_density": 24.2000,
+      "confusion_penalty": 0.0800,
+      "notes": "coverage=0.702; profile=web_light_default; status=approved"
+    }
+  ],
+  "corpus_line_count": 5,
+  "corpus_char_count": 121
+}

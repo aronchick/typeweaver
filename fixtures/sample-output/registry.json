@@ -1,0 +1,64 @@
+{
+  "assets": [
+    {
+      "id": "font-17c222b5404a2896",
+      "path": "fixtures/fonts/OpenPixel-Regular.woff2",
+      "file_name": "OpenPixel-Regular.woff2",
+      "family_name": "OpenPixel",
+      "style_name": "Regular",
+      "license_raw": "CC0-1.0",
+      "license_normalized": "cc0",
+      "status": "approved",
+      "status_reason": "approved license class",
+      "file_size_bytes": 19
+    },
+    {
+      "id": "font-3c10e38ad5c2f378",
+      "path": "fixtures/fonts/GammaMono-Bold.otf",
+      "file_name": "GammaMono-Bold.otf",
+      "family_name": "GammaMono",
+      "style_name": "Bold",
+      "license_raw": "OFL-1.1",
+      "license_normalized": "ofl",
+      "status": "rejected",
+      "status_reason": "OFL is rejected in Phase 1",
+      "file_size_bytes": 21
+    },
+    {
+      "id": "font-67980c9dfd1ca757",
+      "path": "fixtures/fonts/AlphaSans-Regular.ttf",
+      "file_name": "AlphaSans-Regular.ttf",
+      "family_name": "AlphaSans",
+      "style_name": "Regular",
+      "license_raw": "MIT",
+      "license_normalized": "mit",
+      "status": "approved",
+      "status_reason": "approved license class",
+      "file_size_bytes": 21
+    },
+    {
+      "id": "font-90fc291f43dc284f",
+      "path": "fixtures/fonts/MysteryGrotesk.ttf",
+      "file_name": "MysteryGrotesk.ttf",
+      "family_name": "MysteryGrotesk",
+      "style_name": null,
+      "license_raw": null,
+      "license_normalized": "unknown",
+      "status": "quarantined",
+      "status_reason": "unknown license: quarantine required",
+      "file_size_bytes": 23
+    },
+    {
+      "id": "font-9d4e2f002285c6b4",
+      "path": "fixtures/fonts/DualPack.woff",
+      "file_name": "DualPack.woff",
+      "family_name": "DualPack",
+      "style_name": null,
+      "license_raw": "MIT / OFL",
+      "license_normalized": "mixed",
+      "status": "rejected",
+      "status_reason": "mixed-license packs are rejected in Phase 1",
+      "file_size_bytes": 21
+    }
+  ]
+}

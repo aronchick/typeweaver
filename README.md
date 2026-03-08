@@ -2,26 +2,66 @@
 
 TypeWeaver is a typography robustness lab and constrained font-creation platform.
 
-Phase 1 focuses on:
-- ingesting approved fonts
-- validating provenance and license class
-- rendering a fixed Latin corpus
-- applying a small benchmark matrix
-- generating JSON report cards
+This repository contains the **Phase 1 MVP** only:
+- local font ingestion
+- license normalization and policy status handling
+- fixed Latin corpus rendering
+- benchmark scoring for two profiles
+- JSON report card output
 
-Phase 1 explicitly excludes:
+Out of scope in this phase:
 - font generation
 - OCR scoring
 - URL auditing
 - website UI
-- human evaluation workflows
+- cloud/human-study workflows
 
-## Docs
-See docs/ for RFCs and implementation guidance.
+## Workspace layout
+- `crates/typeweaver-core`: shared types, corpus, profile and report models
+- `crates/typeweaver-registry`: ingestion, license normalization, registry persistence
+- `crates/typeweaver-render`: fixed Latin corpus rendering helpers
+- `crates/typeweaver-bench`: profile benchmark runner and report builder
+- `crates/typeweaver-cli`: CLI entrypoint (`ingest`, `bench`)
 
-## Planned workspace
-- crates/typeweaver-core
-- crates/typeweaver-registry
-- crates/typeweaver-render
-- crates/typeweaver-bench
-- crates/typeweaver-cli
+## Quickstart
+
+Run all tests:
+
+```bash
+cargo test
+```
+
+Ingest local fonts and write `registry.json`:
+
+```bash
+cargo run -- ingest fixtures/fonts --registry-root fixtures/sample-output
+```
+
+Run a benchmark profile for one font id:
+
+```bash
+cargo run -- bench font-67980c9dfd1ca757 --profile web_light_default --registry-root fixtures/sample-output
+```
+
+This produces:
+- `fixtures/sample-output/registry.json`
+- `fixtures/sample-output/reports/font-67980c9dfd1ca757-web_light_default.json`
+
+## Phase 1 corpus
+The fixed Latin corpus includes:
+- uppercase `A-Z`
+- lowercase `a-z`
+- digits `0-9`
+- punctuation line
+- confusion pairs: `O/0`, `I/l/1`, `S/5`, `B/8`, `rn/m`, `cl/d`
+
+## Benchmark profiles
+Implemented profiles (exactly):
+- `web_light_default`
+- `mobile_dark_low_contrast`
+
+## Fixture notes
+`fixtures/fonts` contains sample local files with sidecar `.license` files to demonstrate:
+- approved assets: MIT, CC0
+- rejected assets: OFL, mixed license
+- quarantined asset: unknown/no license

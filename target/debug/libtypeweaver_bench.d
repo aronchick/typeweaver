@@ -1,0 +1,1 @@
+/mnt/data/openclaw-repos/typeweaver/target/debug/libtypeweaver_bench.rlib: /mnt/data/openclaw-repos/typeweaver/crates/typeweaver-bench/src/lib.rs /mnt/data/openclaw-repos/typeweaver/crates/typeweaver-core/src/lib.rs /mnt/data/openclaw-repos/typeweaver/crates/typeweaver-registry/src/lib.rs /mnt/data/openclaw-repos/typeweaver/crates/typeweaver-render/src/lib.rs
