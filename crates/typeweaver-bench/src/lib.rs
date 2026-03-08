@@ -84,6 +84,7 @@ pub fn run_report(asset: &FontAsset, profile: BenchmarkProfile) -> ReportCard {
             estimated_coverage: metrics.estimated_coverage,
             notes: metrics.notes,
         },
+        ocr_score: None,
     }
 }
 

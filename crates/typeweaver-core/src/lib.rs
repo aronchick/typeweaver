@@ -211,6 +211,14 @@ pub struct ReportArtifacts {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct OcrScore {
+    pub expected: String,
+    pub recognized: String,
+    pub char_accuracy: f32,
+    pub word_accuracy: f32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct ReportMeasurements {
     pub score: f32,
     pub line_density: f32,
@@ -229,6 +237,7 @@ pub struct ReportCard {
     pub corpus: ReportCorpusSummary,
     pub artifacts: ReportArtifacts,
     pub measurements: ReportMeasurements,
+    pub ocr_score: Option<OcrScore>,
 }
 
 pub fn escape_json(input: &str) -> String {
@@ -351,7 +360,21 @@ impl ReportCard {
             self.measurements.estimated_coverage
         ));
         push_json_string_field(&mut json, "notes", &self.measurements.notes, false);
-        json.push_str("  }\n");
+        json.push_str("  },\n");
+
+        match &self.ocr_score {
+            Some(ocr) => {
+                json.push_str("  \"ocr_score\": {\n");
+                push_json_string_field(&mut json, "expected", &ocr.expected, true);
+                push_json_string_field(&mut json, "recognized", &ocr.recognized, true);
+                json.push_str(&format!("    \"char_accuracy\": {:.4},\n", ocr.char_accuracy));
+                json.push_str(&format!("    \"word_accuracy\": {:.4}\n", ocr.word_accuracy));
+                json.push_str("  }\n");
+            }
+            None => {
+                json.push_str("  \"ocr_score\": null\n");
+            }
+        }
 
         json.push('}');
         json
@@ -402,6 +425,7 @@ mod tests {
                 estimated_coverage: 0.88,
                 notes: "phase1".to_string(),
             },
+            ocr_score: None,
         };
 
         let first = report.to_json_pretty();

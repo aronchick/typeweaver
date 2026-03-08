@@ -4,6 +4,8 @@ members = [
   "crates/typeweaver-registry",
   "crates/typeweaver-render",
   "crates/typeweaver-bench",
+  "crates/typeweaver-ocr",
+  "crates/typeweaver-api",
   "crates/typeweaver-cli",
 ]
 resolver = "2"

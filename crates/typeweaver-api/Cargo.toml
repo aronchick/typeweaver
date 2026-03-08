@@ -1,0 +1,26 @@
+[package]
+name = "typeweaver-api"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+typeweaver-core = { path = "../typeweaver-core" }
+typeweaver-registry = { path = "../typeweaver-registry" }
+typeweaver-bench = { path = "../typeweaver-bench" }
+
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.6", features = ["cors"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rust-embed = "8"
+mime_guess = "2"
+uuid = { version = "1", features = ["v4"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+opentelemetry = "0.27"
+opentelemetry-otlp = { version = "0.27", features = ["grpc-tonic"] }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
+tracing-opentelemetry = "0.28"
+prometheus = "0.13"
