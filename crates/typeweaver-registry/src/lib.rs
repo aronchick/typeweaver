@@ -1,6 +1,7 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::collections::HashSet;
 
 use typeweaver_core::{
     AssetStatus, FontAsset, NormalizedLicense, REGISTRY_FILE_NAME, Registry, escape_json,
@@ -34,21 +35,39 @@ pub fn normalize_license(raw: Option<&str>) -> NormalizedLicense {
         return NormalizedLicense::Unknown;
     };
 
-    let lower = raw.to_ascii_lowercase();
-    if lower.trim().is_empty() {
+    let normalized = raw.trim().to_ascii_lowercase();
+    if normalized.is_empty() {
         return NormalizedLicense::Unknown;
     }
 
-    if lower.contains("mixed") {
-        return NormalizedLicense::Mixed;
+    if contains_any(
+        &normalized,
+        &[
+            "ambiguous",
+            "unsure",
+            "unclear",
+            "tbd",
+            "unknown provenance",
+            "unverified",
+        ],
+    ) {
+        return NormalizedLicense::Ambiguous;
     }
 
-    let has_pd = lower.contains("public domain") || lower.trim() == "pd";
-    let has_cc0 = lower.contains("cc0") || lower.contains("creative commons zero");
-    let has_mit = lower.contains("mit");
-    let has_apache = lower.contains("apache") && lower.contains('2');
-    let has_ofl = lower.contains("ofl") || lower.contains("open font license");
-    let has_gpl = lower.contains("gpl") || lower.contains("lgpl") || lower.contains("agpl");
+    let has_pd = normalized.contains("public domain") || contains_token(&normalized, "pd");
+    let has_cc0 = normalized.contains("cc0") || normalized.contains("creative commons zero");
+    let has_mit =
+        contains_token(&normalized, "mit") || normalized.contains("mit license");
+    let has_apache = contains_token(&normalized, "apache")
+        && contains_any(
+            &normalized,
+            &["2.0", "version 2", "version 2.0", "apache-2", "apache 2"],
+        );
+    let has_ofl =
+        contains_token(&normalized, "ofl") || normalized.contains("open font license");
+    let has_gpl = contains_license_family_token(&normalized, "gpl")
+        || contains_license_family_token(&normalized, "lgpl")
+        || contains_license_family_token(&normalized, "agpl");
 
     let approved_count = [has_pd, has_cc0, has_mit, has_apache]
         .into_iter()
@@ -56,12 +75,19 @@ pub fn normalize_license(raw: Option<&str>) -> NormalizedLicense {
         .count();
     let rejected_count = [has_ofl, has_gpl].into_iter().filter(|v| *v).count();
 
-    if approved_count > 0 && rejected_count > 0 {
+    if contains_any(&normalized, &["mixed license", "mixed", "dual license pack"]) {
         return NormalizedLicense::Mixed;
     }
 
-    if approved_count > 1 && (lower.contains('/') || lower.contains(',')) {
-        return NormalizedLicense::Ambiguous;
+    if approved_count + rejected_count > 1 {
+        return NormalizedLicense::Mixed;
+    }
+
+    if contains_any(
+        &normalized,
+        &["unknown", "undisclosed", "no license", "not specified"],
+    ) {
+        return NormalizedLicense::Unknown;
     }
 
     if has_pd {
@@ -81,10 +107,6 @@ pub fn normalize_license(raw: Option<&str>) -> NormalizedLicense {
     }
     if has_gpl {
         return NormalizedLicense::GplVariant;
-    }
-
-    if lower.contains("unknown") || lower.contains("unsure") || lower.contains("tbd") {
-        return NormalizedLicense::Ambiguous;
     }
 
     NormalizedLicense::Unknown
@@ -128,15 +150,26 @@ pub fn ingest_dir(dir: &Path) -> Result<Registry, RegistryError> {
             dir.display()
         )));
     }
+    if !dir.is_dir() {
+        return Err(RegistryError::Parse(format!(
+            "ingest path is not a directory: {}",
+            dir.display()
+        )));
+    }
 
     let mut assets = Vec::new();
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_file() || !is_font_candidate(&path) {
+    let mut candidate_paths = fs::read_dir(dir)?
+        .map(|entry| entry.map(|v| v.path()))
+        .collect::<Result<Vec<_>, io::Error>>()?;
+    candidate_paths.retain(|path| path.is_file() && is_font_candidate(path));
+    candidate_paths.sort();
+
+    let mut seen_hashes = HashSet::new();
+    for path in candidate_paths {
+        let file_hash = hash_file_contents(&path)?;
+        if !seen_hashes.insert(file_hash) {
             continue;
         }
-
         let metadata = fs::metadata(&path)?;
         let file_name = path
             .file_name()
@@ -148,7 +181,7 @@ pub fn ingest_dir(dir: &Path) -> Result<Registry, RegistryError> {
         let (status, status_reason) = classify_status(&license_normalized);
 
         assets.push(FontAsset {
-            id: deterministic_font_id(&path),
+            id: deterministic_font_id(&path)?,
             path: path.to_string_lossy().to_string(),
             file_name,
             family_name,
@@ -190,9 +223,12 @@ pub fn find_asset<'a>(
 }
 
 pub fn registry_to_json(registry: &Registry) -> String {
+    let mut assets = registry.assets.clone();
+    assets.sort_by(|a, b| a.id.cmp(&b.id));
+
     let mut out = String::new();
     out.push_str("{\n  \"assets\": [\n");
-    for (idx, asset) in registry.assets.iter().enumerate() {
+    for (idx, asset) in assets.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"id\": \"{}\",\n", escape_json(&asset.id)));
         out.push_str(&format!(
@@ -234,7 +270,7 @@ pub fn registry_to_json(registry: &Registry) -> String {
             asset.file_size_bytes
         ));
         out.push_str("    }");
-        if idx + 1 != registry.assets.len() {
+        if idx + 1 != assets.len() {
             out.push(',');
         }
         out.push('\n');
@@ -279,6 +315,7 @@ pub fn parse_registry_json(raw: &str) -> Result<Registry, RegistryError> {
             file_size_bytes,
         });
     }
+    assets.sort_by(|a, b| a.id.cmp(&b.id));
     Ok(Registry { assets })
 }
 
@@ -343,14 +380,35 @@ fn split_family_style_from_name(file_name: &str) -> (Option<String>, Option<Stri
     (Some(parts.join(" ")), style)
 }
 
-fn deterministic_font_id(path: &Path) -> String {
-    let seed = path.to_string_lossy();
+fn deterministic_font_id(path: &Path) -> Result<String, RegistryError> {
+    let seed = hash_file_contents(path)?;
     let mut hash: u64 = 0xcbf29ce484222325;
     for byte in seed.as_bytes() {
         hash ^= *byte as u64;
         hash = hash.wrapping_mul(0x100000001b3);
     }
-    format!("font-{hash:016x}")
+    Ok(format!("font-{hash:016x}"))
+}
+
+fn hash_file_contents(path: &Path) -> Result<String, RegistryError> {
+    let content = fs::read(path)?;
+    let mut hash: u64 = 0xcbf29ce484222325;
+    for byte in &content {
+        hash ^= *byte as u64;
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+    Ok(format!("{hash:016x}"))
+}
+
+fn contains_any(input: &str, patterns: &[&str]) -> bool {
+    patterns.iter().any(|pattern| input.contains(pattern))
+}
+
+fn contains_token(input: &str, token: &str) -> bool {
+    input
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|part| !part.is_empty())
+        .any(|part| part == token)
 }
 
 fn split_objects(raw: &str) -> Vec<String> {
@@ -457,6 +515,13 @@ fn parse_status(raw: &str) -> AssetStatus {
     }
 }
 
+fn contains_license_family_token(input: &str, family: &str) -> bool {
+    input
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|part| !part.is_empty())
+        .any(|part| part == family || part.starts_with(family))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -482,6 +547,16 @@ mod tests {
             NormalizedLicense::GplVariant
         );
         assert_eq!(normalize_license(None), NormalizedLicense::Unknown);
+    }
+
+    #[test]
+    fn normalize_license_avoids_partial_token_false_positives() {
+        assert_eq!(normalize_license(Some("Permit required")), NormalizedLicense::Unknown);
+        assert_eq!(normalize_license(Some("MIT OR Apache-2.0")), NormalizedLicense::Mixed);
+        assert_eq!(
+            normalize_license(Some("unknown provenance")),
+            NormalizedLicense::Ambiguous
+        );
     }
 
     #[test]
@@ -530,6 +605,66 @@ mod tests {
         assert_eq!(loaded.assets[0].id, "font-1");
 
         let _ = fs::remove_file(tmp.join(REGISTRY_FILE_NAME));
+        let _ = fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn registry_json_is_sorted_by_font_id() {
+        let registry = Registry {
+            assets: vec![
+                FontAsset {
+                    id: "font-b".to_string(),
+                    path: "b.ttf".to_string(),
+                    file_name: "b.ttf".to_string(),
+                    family_name: None,
+                    style_name: None,
+                    license_raw: Some("MIT".to_string()),
+                    license_normalized: NormalizedLicense::Mit,
+                    status: AssetStatus::Approved,
+                    status_reason: "approved".to_string(),
+                    file_size_bytes: 1,
+                },
+                FontAsset {
+                    id: "font-a".to_string(),
+                    path: "a.ttf".to_string(),
+                    file_name: "a.ttf".to_string(),
+                    family_name: None,
+                    style_name: None,
+                    license_raw: Some("MIT".to_string()),
+                    license_normalized: NormalizedLicense::Mit,
+                    status: AssetStatus::Approved,
+                    status_reason: "approved".to_string(),
+                    file_size_bytes: 1,
+                },
+            ],
+        };
+
+        let json = registry_to_json(&registry);
+        let pos_a = json.find("\"id\": \"font-a\"").unwrap();
+        let pos_b = json.find("\"id\": \"font-b\"").unwrap();
+        assert!(pos_a < pos_b);
+    }
+
+    #[test]
+    fn ingest_skips_duplicate_font_payloads() {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let tmp = std::env::temp_dir().join(format!("tw-dedupe-{nonce}"));
+        fs::create_dir_all(&tmp).unwrap();
+
+        let font_a = tmp.join("A.ttf");
+        let font_b = tmp.join("B.ttf");
+        fs::write(&font_a, b"same-bytes").unwrap();
+        fs::write(&font_b, b"same-bytes").unwrap();
+        fs::write(tmp.join("A.license"), "MIT").unwrap();
+        fs::write(tmp.join("B.license"), "MIT").unwrap();
+
+        let registry = ingest_dir(&tmp).unwrap();
+        assert_eq!(registry.assets.len(), 1);
+        assert_eq!(registry.assets[0].file_name, "A.ttf");
+
         let _ = fs::remove_dir_all(&tmp);
     }
 }
