@@ -15,8 +15,9 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
-    if args.is_empty() {
-        return Err(usage());
+    if args.is_empty() || is_help_flag(&args[0]) {
+        println!("{}", usage());
+        return Ok(());
     }
 
     match args[0].as_str() {
@@ -27,6 +28,11 @@ fn run() -> Result<(), String> {
 }
 
 fn handle_ingest(args: &[String]) -> Result<(), String> {
+    if args.first().is_some_and(|arg| is_help_flag(arg)) {
+        println!("{}", ingest_usage());
+        return Ok(());
+    }
+
     if args.is_empty() {
         return Err("ingest requires <dir>\n".to_string() + &usage());
     }
@@ -68,6 +74,11 @@ fn handle_ingest(args: &[String]) -> Result<(), String> {
 }
 
 fn handle_bench(args: &[String]) -> Result<(), String> {
+    if args.first().is_some_and(|arg| is_help_flag(arg)) {
+        println!("{}", bench_usage());
+        return Ok(());
+    }
+
     if args.is_empty() {
         return Err("bench requires <font-id>\n".to_string() + &usage());
     }
@@ -108,11 +119,49 @@ fn parse_flag_value(args: &[String], name: &str) -> Option<String> {
         .and_then(|idx| args.get(idx + 1).cloned())
 }
 
+fn is_help_flag(value: &str) -> bool {
+    matches!(value, "--help" | "-h" | "help")
+}
+
 fn usage() -> String {
     [
         "Usage:",
         "  cargo run -p typeweaver-cli -- ingest <dir> [--registry-root <dir>]",
         "  cargo run -p typeweaver-cli -- bench <font-id> --profile <web_light_default|mobile_dark_low_contrast> [--registry-root <dir>] [--out <file>]",
+        "",
+        "Use subcommand help:",
+        "  cargo run -p typeweaver-cli -- ingest --help",
+        "  cargo run -p typeweaver-cli -- bench --help",
+    ]
+    .join("\n")
+}
+
+fn ingest_usage() -> String {
+    [
+        "Usage:",
+        "  cargo run -p typeweaver-cli -- ingest <dir> [--registry-root <dir>]",
+        "",
+        "Arguments:",
+        "  <dir>                  Directory containing local font files",
+        "",
+        "Options:",
+        "  --registry-root <dir>  Output root for registry.json (default: .typeweaver)",
+    ]
+    .join("\n")
+}
+
+fn bench_usage() -> String {
+    [
+        "Usage:",
+        "  cargo run -p typeweaver-cli -- bench <font-id> --profile <web_light_default|mobile_dark_low_contrast> [--registry-root <dir>] [--out <file>]",
+        "",
+        "Arguments:",
+        "  <font-id>              Font id from registry.json",
+        "",
+        "Options:",
+        "  --profile <slug>       Benchmark profile slug",
+        "  --registry-root <dir>  Root containing registry.json and reports/ (default: .typeweaver)",
+        "  --out <file>           Optional explicit report output path",
     ]
     .join("\n")
 }
