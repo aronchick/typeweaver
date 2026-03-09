@@ -1,4 +1,4 @@
-use prometheus::{Histogram, HistogramOpts, IntCounter, IntGauge, Registry};
+use prometheus::{Histogram, HistogramOpts, IntCounter, IntCounterVec, IntGauge, Opts, Registry};
 
 /// Application-level Prometheus metrics.
 pub struct Metrics {
@@ -9,6 +9,9 @@ pub struct Metrics {
     pub bench_runs_total: IntCounter,
     pub ocr_runs_total: IntCounter,
     pub registry_size: IntGauge,
+    pub api_calls_total: IntCounterVec,
+    pub active_requests: IntGauge,
+    pub upload_bytes_total: IntCounter,
 }
 
 impl Metrics {
@@ -34,6 +37,16 @@ impl Metrics {
             IntCounter::new("typeweaver_ocr_runs_total", "Total OCR scoring runs").unwrap();
         let registry_size =
             IntGauge::new("typeweaver_registry_size", "Number of fonts in registry").unwrap();
+        let api_calls_total = IntCounterVec::new(
+            Opts::new("typeweaver_api_calls_total", "Total API calls by endpoint"),
+            &["endpoint"],
+        )
+        .unwrap();
+        let active_requests =
+            IntGauge::new("typeweaver_active_requests", "Currently in-flight requests").unwrap();
+        let upload_bytes_total =
+            IntCounter::new("typeweaver_upload_bytes_total", "Total bytes uploaded via ingest")
+                .unwrap();
 
         registry
             .register(Box::new(requests_total.clone()))
@@ -53,6 +66,15 @@ impl Metrics {
         registry
             .register(Box::new(registry_size.clone()))
             .unwrap();
+        registry
+            .register(Box::new(api_calls_total.clone()))
+            .unwrap();
+        registry
+            .register(Box::new(active_requests.clone()))
+            .unwrap();
+        registry
+            .register(Box::new(upload_bytes_total.clone()))
+            .unwrap();
 
         Self {
             registry,
@@ -62,6 +84,9 @@ impl Metrics {
             bench_runs_total,
             ocr_runs_total,
             registry_size,
+            api_calls_total,
+            active_requests,
+            upload_bytes_total,
         }
     }
 }
