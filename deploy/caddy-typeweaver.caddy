@@ -1,5 +1,5 @@
-typeweaver.example.com {
-    reverse_proxy 127.0.0.1:3000
+typeweaver.org, www.typeweaver.org {
+    reverse_proxy 127.0.0.1:3500
     encode gzip
     log {
         output file /var/log/caddy/typeweaver.log
