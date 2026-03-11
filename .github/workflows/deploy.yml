@@ -91,10 +91,13 @@ jobs:
 
       - name: Health check
         run: |
-          sleep 5
-          curl -sf http://${{ secrets.DEPLOY_HOST }}:3500/okz    && echo "/okz OK"
-          curl -sf http://${{ secrets.DEPLOY_HOST }}:3500/healthz && echo "/healthz OK"
-          curl -sf http://${{ secrets.DEPLOY_HOST }}:3500/varz | head -5 && echo "/varz OK"
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} bash -s << 'REMOTE'
+            set -euo pipefail
+            sleep 5
+            curl -sf --max-time 10 http://127.0.0.1:3500/okz    && echo "/okz OK"
+            curl -sf --max-time 10 http://127.0.0.1:3500/healthz && echo "/healthz OK"
+            curl -sf --max-time 10 http://127.0.0.1:3500/varz | head -5 && echo "/varz OK"
+          REMOTE
 
       - name: Smoke test (ingest fixtures)
         run: |
