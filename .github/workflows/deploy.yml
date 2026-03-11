@@ -44,16 +44,7 @@ jobs:
             exit 1
           fi
           echo "Checking SSH reachability for $host:22"
-          python3 - <<'PY' "$host"
-import socket, sys
-host = sys.argv[1]
-try:
-    with socket.create_connection((host, 22), timeout=10):
-        print(f"SSH reachable on {host}:22")
-except Exception as e:
-    print(f"Cannot reach {host}:22 -> {e}")
-    raise SystemExit(1)
-PY
+          python3 -c 'import socket, sys; host = sys.argv[1]; s = socket.create_connection((host, 22), timeout=10); s.close(); print(f"SSH reachable on {host}:22")' "$host"
 
       - name: Set up SSH
         run: |
