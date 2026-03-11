@@ -6,78 +6,125 @@
 <title>TypeWeaver</title>
 <style>
   :root {
-    --page-bg: #f4efe6;
-    --page-bg-alt: #e7dfd1;
-    --ink: #182126;
-    --muted: #5d6769;
-    --panel: rgba(255, 250, 242, 0.9);
-    --panel-strong: #fffaf2;
-    --line: rgba(24, 33, 38, 0.12);
-    --accent: #ff6a3d;
-    --accent-deep: #c84727;
-    --accent-soft: rgba(255, 106, 61, 0.12);
-    --teal: #127a76;
-    --teal-soft: rgba(18, 122, 118, 0.13);
-    --gold: #d39a2c;
-    --gold-soft: rgba(211, 154, 44, 0.16);
-    --shadow: 0 20px 60px rgba(82, 57, 31, 0.12);
+    --bg: #f5efe5;
+    --bg-2: #e9dfd1;
+    --surface: rgba(255, 251, 245, 0.9);
+    --surface-strong: #fffaf3;
+    --ink: #141a1e;
+    --muted: #5f6668;
+    --muted-2: #72797b;
+    --line: rgba(20, 26, 30, 0.1);
+    --accent: #ff6b3d;
+    --accent-2: #ff946a;
+    --teal: #0d756f;
+    --gold: #be8624;
+    --shadow: 0 24px 80px rgba(67, 45, 21, 0.12);
+    --shadow-soft: 0 12px 28px rgba(67, 45, 21, 0.08);
+    --radius-xxl: 34px;
     --radius-xl: 28px;
-    --radius-lg: 20px;
-    --radius-md: 14px;
-    --radius-sm: 10px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --max: 1260px;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
     margin: 0;
     min-height: 100vh;
     color: var(--ink);
-    font-family: "Avenir Next", "Segoe UI", sans-serif;
+    font-family: Inter, "Avenir Next", "Segoe UI", sans-serif;
     background:
-      radial-gradient(circle at top left, rgba(255, 202, 158, 0.65), transparent 28%),
-      radial-gradient(circle at top right, rgba(139, 198, 191, 0.4), transparent 22%),
-      linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-alt) 100%);
+      radial-gradient(circle at 0% 0%, rgba(255, 190, 150, 0.42), transparent 28%),
+      radial-gradient(circle at 100% 0%, rgba(110, 190, 180, 0.24), transparent 24%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   }
 
   .shell {
-    width: min(1180px, calc(100vw - 32px));
+    width: min(var(--max), calc(100vw - 32px));
     margin: 0 auto;
-    padding: 28px 0 48px;
+    padding: 22px 0 72px;
   }
 
-  .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
-    gap: 22px;
-    align-items: stretch;
-  }
-
-  .hero-card,
-  .panel {
-    background: var(--panel);
+  .card {
+    background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(18px);
   }
 
-  .hero-copy {
-    padding: 34px;
-    position: relative;
-    overflow: hidden;
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 8px 4px 22px;
   }
 
-  .hero-copy::after {
-    content: "";
-    position: absolute;
-    inset: auto -60px -80px auto;
-    width: 220px;
-    height: 220px;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(255,107,61,0.18), rgba(13,117,111,0.14));
+    border: 1px solid rgba(20,26,30,0.08);
+    font-family: Georgia, serif;
+    font-size: 23px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+  }
+
+  .topbar-note {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .hero {
+    padding: 28px;
+    border-radius: var(--radius-xxl);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.56), rgba(255,255,255,0.16)),
+      var(--surface);
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .eyebrow,
+  .pill,
+  .tag,
+  .license-chip,
+  .status,
+  button,
+  .summary-chip {
     border-radius: 999px;
-    background: radial-gradient(circle, rgba(255, 106, 61, 0.26), transparent 70%);
+  }
+
+  .eyebrow,
+  .section-kicker,
+  .metric-card .label,
+  .mini-label,
+  .compare-label {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 11px;
+    color: var(--muted);
   }
 
   .eyebrow {
@@ -85,54 +132,107 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.58);
-    border: 1px solid rgba(24, 33, 38, 0.08);
-    color: var(--muted);
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    background: rgba(255,255,255,0.74);
+    border: 1px solid rgba(20,26,30,0.08);
   }
 
   h1 {
-    margin: 18px 0 12px;
+    margin: 16px 0 12px;
+    max-width: 11ch;
     font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-    font-size: clamp(2.5rem, 4vw, 4.2rem);
-    line-height: 0.94;
-    letter-spacing: -0.04em;
+    font-size: clamp(2.8rem, 5vw, 4.8rem);
+    line-height: 0.93;
+    letter-spacing: -0.06em;
+    text-wrap: balance;
   }
 
-  .hero-copy p {
-    max-width: 58ch;
+  .hero-subcopy {
     margin: 0;
-    color: var(--muted);
+    max-width: 62ch;
     font-size: 17px;
-    line-height: 1.6;
+    line-height: 1.7;
+    color: var(--muted);
   }
 
-  .hero-actions {
+  .hero-actions,
+  .summary-chips,
+  .action-row,
+  .license-row,
+  .tag-row,
+  .font-meta,
+  .control-row,
+  .compare-actions,
+  .compare-score-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 24px;
+    gap: 10px;
+    align-items: center;
   }
 
-  .pill {
+  .hero-actions { margin-top: 22px; }
+
+  .pill,
+  .summary-chip,
+  .tag,
+  .license-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(24, 33, 38, 0.1);
-    background: rgba(255, 255, 255, 0.64);
+    padding: 9px 13px;
+    background: rgba(255,255,255,0.76);
+    border: 1px solid rgba(20,26,30,0.08);
     font-size: 13px;
-    color: var(--ink);
   }
 
   .hero-side {
-    padding: 24px;
     display: grid;
-    gap: 16px;
+    gap: 14px;
+  }
+
+  .why-card,
+  .mini-card,
+  .scenario-card,
+  .font-card,
+  .metric-card,
+  .story-card,
+  .specimen-card,
+  .compare-card,
+  .selection-card,
+  .empty-state,
+  .drop-zone,
+  .help-card {
+    background: var(--surface-strong);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+
+  .why-card,
+  .mini-card,
+  .help-card {
+    padding: 18px;
+  }
+
+  .why-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,107,61,0.04));
+  }
+
+  .why-card strong,
+  .help-card strong,
+  .mini-card strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+
+  .why-card p,
+  .help-card p,
+  .mini-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
   }
 
   .mini-grid {
@@ -141,46 +241,78 @@
     gap: 12px;
   }
 
-  .mini-stat {
-    background: var(--panel-strong);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 18px;
-  }
-
-  .mini-stat .label {
-    display: block;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .mini-stat strong {
+  .mini-value {
     display: block;
     font-size: 28px;
-    font-weight: 700;
-  }
-
-  .mini-stat span {
-    display: block;
-    margin-top: 6px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .hero-note {
-    padding: 18px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, rgba(18, 122, 118, 0.12), rgba(255, 255, 255, 0.68));
-    border: 1px solid rgba(18, 122, 118, 0.16);
-  }
-
-  .hero-note strong {
-    display: block;
+    line-height: 1;
+    letter-spacing: -0.04em;
     margin-bottom: 6px;
-    font-size: 15px;
+  }
+
+  .hero-compare {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(20,26,30,0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,242,235,0.96));
+  }
+
+  .hero-compare h2 {
+    margin: 0 0 8px;
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .hero-compare p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .sample-lines {
+    margin-top: 18px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .sample-line {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(20,26,30,0.08);
+  }
+
+  .sample-line:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .sample-line-label {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sample-line-value.display {
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    letter-spacing: -0.05em;
+  }
+
+  .sample-line-value.body {
+    font-size: 16px;
+    line-height: 1.65;
+    max-width: 42ch;
+  }
+
+  .sample-line-value.detail {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted-2);
   }
 
   .layout {
@@ -196,7 +328,7 @@
   }
 
   .panel {
-    padding: 24px;
+    padding: 26px;
   }
 
   .panel-head {
@@ -208,109 +340,101 @@
   }
 
   .panel-head h2 {
-    margin: 0 0 6px;
+    margin: 6px 0 8px;
     font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-    font-size: 30px;
+    font-size: 32px;
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.045em;
   }
 
   .panel-head p {
     margin: 0;
     color: var(--muted);
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.7;
+    max-width: 60ch;
+  }
+
+  .section-kicker {
+    display: block;
+    margin-bottom: 2px;
   }
 
   .drop-zone {
+    display: block;
     position: relative;
-    padding: 28px;
-    border: 2px dashed rgba(24, 33, 38, 0.16);
-    border-radius: 24px;
-    background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 106, 61, 0.06)),
-      var(--panel-strong);
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    padding: 30px;
+    border: 2px dashed rgba(20,26,30,0.14);
     cursor: pointer;
+    background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,107,61,0.05));
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   }
 
   .drop-zone:hover,
   .drop-zone.drag-over {
     transform: translateY(-1px);
-    border-color: rgba(255, 106, 61, 0.46);
-    box-shadow: 0 16px 40px rgba(255, 106, 61, 0.12);
+    border-color: rgba(255,107,61,0.42);
+    box-shadow: 0 18px 40px rgba(255,107,61,0.12);
   }
 
-  .drop-zone input[type="file"] {
-    display: none;
-  }
+  .drop-zone input[type="file"] { display: none; }
 
   .drop-title {
     display: block;
-    font-size: 24px;
+    margin-bottom: 10px;
+    max-width: 14ch;
     font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-    margin-bottom: 8px;
+    font-size: 32px;
+    line-height: 1.03;
+    letter-spacing: -0.05em;
   }
 
   .drop-subtitle,
-  .muted {
+  .muted,
+  .status-copy,
+  .font-head small,
+  .font-meta,
+  .story-card p,
+  .upload-msg,
+  .specimen-meta {
     color: var(--muted);
   }
 
-  .license-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 18px 0 20px;
+  .drop-subtitle {
+    font-size: 15px;
+    line-height: 1.68;
+    max-width: 60ch;
   }
 
-  .license-chip {
-    padding: 9px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.58);
-  }
-
-  .action-row,
-  .control-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-  }
-
-  button,
-  select {
+  button {
     appearance: none;
-    border: 1px solid rgba(24, 33, 38, 0.12);
-    border-radius: 999px;
+    border: 1px solid rgba(20,26,30,0.12);
     padding: 12px 16px;
     font: inherit;
     background: #fffaf4;
     color: var(--ink);
-  }
-
-  button {
     cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
 
   button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(24, 33, 38, 0.08);
+    box-shadow: 0 10px 24px rgba(20,26,30,0.08);
   }
 
   button.primary {
-    background: linear-gradient(135deg, var(--accent), #ff8a57);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: white;
     border-color: transparent;
     font-weight: 700;
   }
 
-  button.primary:disabled,
+  button.secondary {
+    background: rgba(255,255,255,0.82);
+  }
+
   button:disabled {
-    opacity: 0.5;
+    opacity: 0.48;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -318,20 +442,24 @@
 
   .upload-msg,
   .status-copy {
-    margin-top: 14px;
-    color: var(--muted);
-    font-size: 13px;
     min-height: 20px;
+    font-size: 13px;
   }
 
   .scenario-grid,
   .metric-grid,
-  .font-list {
+  .font-list,
+  .story-grid,
+  .compare-grid,
+  .compare-result-grid {
     display: grid;
     gap: 14px;
   }
 
-  .scenario-grid {
+  .scenario-grid,
+  .metric-grid,
+  .compare-grid,
+  .compare-result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -339,79 +467,74 @@
   .font-card,
   .metric-card,
   .story-card,
-  .specimen-card {
-    border: 1px solid var(--line);
-    background: var(--panel-strong);
-    border-radius: 20px;
+  .specimen-card,
+  .compare-card,
+  .selection-card {
+    padding: 20px;
   }
 
-  .scenario-card {
-    padding: 18px;
+  .scenario-card,
+  .font-card {
     cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
 
   .scenario-card:hover,
   .scenario-card.selected {
     transform: translateY(-2px);
-    border-color: rgba(255, 106, 61, 0.4);
-    box-shadow: 0 18px 36px rgba(255, 106, 61, 0.12);
+    border-color: rgba(255,107,61,0.34);
+    box-shadow: 0 16px 34px rgba(255,107,61,0.1);
   }
 
   .scenario-card.selected {
-    background: linear-gradient(180deg, rgba(255, 106, 61, 0.08), rgba(255, 255, 255, 0.95));
+    background: linear-gradient(180deg, rgba(255,107,61,0.08), rgba(255,255,255,0.98));
   }
 
-  .scenario-card strong {
+  .scenario-card strong,
+  .font-head strong,
+  .compare-card h3,
+  .selection-card h3,
+  .story-card h3,
+  .specimen-card h3 {
     display: block;
+    margin: 0 0 8px;
     font-size: 18px;
-    margin-bottom: 8px;
+    letter-spacing: -0.03em;
   }
 
-  .scenario-card p {
-    margin: 0 0 12px;
-    color: var(--muted);
+  .scenario-card p,
+  .story-card p,
+  .selection-card p,
+  .compare-card p {
+    margin: 0;
     font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .tag-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 7px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    background: rgba(24, 33, 38, 0.06);
+    line-height: 1.68;
     color: var(--muted);
   }
 
   .font-list {
-    grid-template-columns: 1fr;
-    max-height: 580px;
+    max-height: 760px;
     overflow: auto;
+    grid-template-columns: 1fr;
     padding-right: 4px;
   }
 
-  .font-card {
-    padding: 18px;
-    cursor: pointer;
-    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-  }
-
   .font-card:hover,
-  .font-card.selected {
+  .font-card.selected-primary,
+  .font-card.selected-compare {
     transform: translateY(-2px);
-    border-color: rgba(18, 122, 118, 0.32);
   }
 
-  .font-card.selected {
-    background: linear-gradient(180deg, rgba(18, 122, 118, 0.08), rgba(255, 255, 255, 0.95));
+  .font-card.selected-primary {
+    border-color: rgba(13,117,111,0.34);
+    background: linear-gradient(180deg, rgba(13,117,111,0.08), rgba(255,255,255,0.98));
+    box-shadow: 0 14px 28px rgba(13,117,111,0.08);
+  }
+
+  .font-card.selected-compare {
+    border-color: rgba(255,107,61,0.34);
+    background: linear-gradient(180deg, rgba(255,107,61,0.08), rgba(255,255,255,0.98));
+    box-shadow: 0 14px 28px rgba(255,107,61,0.08);
   }
 
   .font-head {
@@ -421,74 +544,28 @@
     align-items: flex-start;
   }
 
-  .font-head strong {
-    display: block;
-    font-size: 18px;
-    margin-bottom: 4px;
-  }
-
-  .font-head small,
-  .font-meta,
-  .story-card p,
-  .specimen-meta {
-    color: var(--muted);
-  }
-
-  .font-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-    font-size: 12px;
-  }
-
   .status {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-radius: 999px;
     font-size: 12px;
     white-space: nowrap;
   }
 
-  .status-approved {
-    background: rgba(18, 122, 118, 0.12);
-    color: var(--teal);
-  }
-
-  .status-rejected {
-    background: rgba(200, 71, 39, 0.13);
-    color: var(--accent-deep);
-  }
-
-  .status-quarantined {
-    background: rgba(211, 154, 44, 0.16);
-    color: #8e670c;
-  }
-
-  .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 18px;
-  }
+  .status-approved { background: rgba(13,117,111,0.12); color: var(--teal); }
+  .status-rejected { background: rgba(200,71,39,0.13); color: #b64528; }
+  .status-quarantined { background: rgba(190,134,36,0.16); color: #8b650f; }
 
   .metric-card {
-    padding: 18px;
-  }
-
-  .metric-card .label {
-    display: block;
-    color: var(--muted);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72));
   }
 
   .metric-card strong {
     display: block;
-    font-size: 30px;
+    font-size: 38px;
     line-height: 1;
+    letter-spacing: -0.05em;
   }
 
   .metric-card span {
@@ -496,66 +573,121 @@
     margin-top: 8px;
     color: var(--muted);
     font-size: 13px;
+    line-height: 1.58;
   }
 
-  .story-grid {
+  .selection-grid {
     display: grid;
-    gap: 14px;
-    margin-top: 18px;
+    gap: 12px;
   }
 
-  .story-card {
+  .selection-card p strong,
+  .compare-summary strong {
+    color: var(--ink);
+  }
+
+  .summary-chip.primary-chip {
+    border-color: rgba(13,117,111,0.18);
+    background: rgba(13,117,111,0.08);
+  }
+
+  .summary-chip.compare-chip {
+    border-color: rgba(255,107,61,0.18);
+    background: rgba(255,107,61,0.08);
+  }
+
+  .compare-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.68));
+  }
+
+  .compare-preview {
+    margin: 14px 0 18px;
     padding: 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(20,26,30,0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,1), rgba(247,242,235,0.96));
   }
 
-  .story-card h3,
-  .specimen-card h3 {
-    margin: 0 0 10px;
-    font-size: 16px;
+  .compare-preview .display-line {
+    margin: 0 0 12px;
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
   }
 
-  .story-card p {
+  .compare-preview .body-line {
+    margin: 0 0 12px;
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .compare-preview .detail-line {
     margin: 0;
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--muted-2);
+  }
+
+  .compare-score {
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin: 0;
+  }
+
+  .compare-meta {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .compare-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    padding-top: 8px;
+    border-top: 1px solid rgba(20,26,30,0.08);
+  }
+
+  .compare-meta-row strong {
+    color: var(--ink);
+    font-weight: 600;
   }
 
   .specimen-card {
-    padding: 20px;
     margin-top: 18px;
-    overflow: hidden;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 106, 61, 0.04)),
-      var(--panel-strong);
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,107,61,0.04));
   }
 
   .specimen-showcase {
-    padding: 22px;
-    border-radius: 18px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(24, 33, 38, 0.04)),
-      white;
-    border: 1px solid rgba(24, 33, 38, 0.08);
+    padding: 26px;
+    border-radius: 20px;
+    border: 1px solid rgba(20,26,30,0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,1), rgba(247,242,235,0.96));
   }
 
   .specimen-lead {
     margin: 0;
     font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-    font-size: clamp(2rem, 4vw, 3.8rem);
+    font-size: clamp(2.2rem, 4vw, 4.1rem);
     line-height: 0.94;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.055em;
   }
 
   .specimen-body {
     margin: 18px 0 0;
     font-size: 17px;
-    line-height: 1.55;
-    max-width: 36ch;
+    line-height: 1.65;
+    max-width: 42ch;
   }
 
   .specimen-detail {
     margin-top: 18px;
     padding-top: 16px;
-    border-top: 1px solid rgba(24, 33, 38, 0.08);
+    border-top: 1px solid rgba(20,26,30,0.08);
     font-family: "SFMono-Regular", Consolas, monospace;
     font-size: 13px;
     color: var(--muted);
@@ -566,9 +698,9 @@
     margin-top: 18px;
     padding: 18px;
     border-radius: 18px;
-    border: 1px solid var(--line);
-    background: #1b1d22;
-    color: #f3f1ed;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #171a1f;
+    color: #f6f2eb;
     font-family: "SFMono-Regular", Consolas, monospace;
     font-size: 12px;
     line-height: 1.6;
@@ -578,156 +710,238 @@
   }
 
   .empty-state {
-    padding: 18px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px dashed rgba(24, 33, 38, 0.14);
+    padding: 20px;
+    line-height: 1.72;
     color: var(--muted);
-    line-height: 1.6;
   }
 
-  @media (max-width: 960px) {
-    .hero,
-    .layout {
-      grid-template-columns: 1fr;
-    }
-
-    .scenario-grid,
-    .metric-grid,
+  @media (max-width: 1080px) {
+    .hero-grid,
+    .layout,
+    .compare-grid,
+    .compare-result-grid,
     .mini-grid {
       grid-template-columns: 1fr;
     }
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 720px) {
     .shell {
-      width: min(100vw - 20px, 1180px);
-      padding-top: 20px;
+      width: min(100vw - 20px, var(--max));
+      padding-top: 16px;
     }
 
-    .hero-copy,
-    .hero-side,
+    .hero,
     .panel {
       padding: 20px;
     }
 
-    h1 {
-      font-size: 2.4rem;
+    .scenario-grid,
+    .metric-grid {
+      grid-template-columns: 1fr;
+    }
+
+    h1,
+    .drop-title {
+      max-width: 100%;
+    }
+
+    .sample-line {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .topbar {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 </style>
 </head>
 <body>
 <main class="shell">
-  <section class="hero">
-    <div class="hero-card hero-copy">
-      <span class="eyebrow">TypeWeaver playground</span>
-      <h1>Stress test typography like it has somewhere real to live.</h1>
-      <p>
-        Upload a font, pick the environment it has to survive, and turn abstract taste
-        into evidence. TypeWeaver makes benchmark runs feel more like a specimen lab than
-        a build pipeline.
-      </p>
-      <div class="hero-actions">
-        <span class="pill">Friendly by default</span>
-        <span class="pill">Deterministic reports underneath</span>
-        <span class="pill">Built for small text, weird contrast, and confusion pairs</span>
-      </div>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>TypeWeaver</div>
     </div>
-    <aside class="hero-card hero-side">
-      <div class="mini-grid">
-        <div class="mini-stat">
-          <span class="label">Phase</span>
-          <strong>1</strong>
-          <span>Ingest, render, benchmark, explain</span>
+    <div class="topbar-note">Compare fonts in real conditions before something ships.</div>
+  </div>
+
+  <section class="card hero">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">What this is</span>
+        <h1>Test fonts where typography actually gets hard.</h1>
+        <p class="hero-subcopy">
+          TypeWeaver is for choosing between real font options, not admiring perfect mockups. It helps you test clarity,
+          rhythm, and legibility in the conditions that expose weak typography fastest: smaller text, darker interfaces,
+          weaker contrast, and tight UI layouts.
+        </p>
+        <div class="hero-actions">
+          <span class="pill">Upload candidates</span>
+          <span class="pill">Pick a scenario</span>
+          <span class="pill">Compare them side by side</span>
         </div>
-        <div class="mini-stat">
-          <span class="label">Profiles</span>
-          <strong>2</strong>
-          <span>Realistic starting scenarios</span>
+
+        <div class="hero-compare">
+          <h2>Why this matters</h2>
+          <p>
+            A font can feel great in one screenshot and fall apart in product use. When letters blur together,
+            numbers collide, or dense text gets tiring, the cost shows up as friction. This tool is meant to make
+            that visible early enough to change your mind.
+          </p>
+          <div class="sample-lines">
+            <div class="sample-line">
+              <div class="sample-line-label">Display</div>
+              <div class="sample-line-value display">Can the headline still feel sharp and intentional?</div>
+            </div>
+            <div class="sample-line">
+              <div class="sample-line-label">Body</div>
+              <div class="sample-line-value body">Can longer reading stay calm, readable, and properly spaced when the environment is less forgiving?</div>
+            </div>
+            <div class="sample-line">
+              <div class="sample-line-label">Detail</div>
+              <div class="sample-line-value detail">What happens to O/0, I/l/1, rn/m, and the tiny details that make text either trustworthy or tiring?</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="hero-note">
-        <strong>Current flow</strong>
-        <span class="muted">
-          Upload fonts, choose a benchmark environment, inspect the report, and compare what holds up.
-        </span>
-      </div>
-      <div class="hero-note">
-        <strong>Next frontier</strong>
-        <span class="muted">
-          This page is designed to grow into a richer permutation explorer without replacing the core evaluator.
-        </span>
-      </div>
-    </aside>
+
+      <aside class="hero-side">
+        <div class="why-card">
+          <strong>Fast answer</strong>
+          <p>
+            Bring in two fonts, run the same scenario, and see which one keeps its shape better. The goal is better decisions, faster.
+          </p>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-card">
+            <span class="mini-label">Primary use</span>
+            <span class="mini-value">Choose</span>
+            <p>Find the font that survives real use, not just presentation mode.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-label">Secondary use</span>
+            <span class="mini-value">Create</span>
+            <p>Next step: generate directions and compare them with the same system.</p>
+          </div>
+        </div>
+        <div class="help-card">
+          <strong>How to use it</strong>
+          <p>
+            1) Upload a few fonts. 2) Set your primary font and optional comparison font. 3) Pick a scenario. 4) Run a single report or compare both.
+          </p>
+        </div>
+      </aside>
+    </div>
   </section>
 
   <section class="layout">
     <div class="stack">
-      <section class="panel">
+      <section class="card panel">
         <div class="panel-head">
           <div>
-            <h2>Bring in a font</h2>
-            <p>Drop a few candidates in, then we will stage them for selection and testing.</p>
+            <span class="section-kicker">Input</span>
+            <h2>Upload a font</h2>
+            <p>
+              Start with a real font file. Supported now: <strong>.ttf</strong>, <strong>.otf</strong>, <strong>.woff</strong>, and <strong>.woff2</strong>.
+            </p>
           </div>
         </div>
 
         <label class="drop-zone" id="dropZone">
           <input type="file" id="fileInput" multiple accept=".ttf,.otf,.woff,.woff2">
           <span class="drop-title" id="dropTitle">Drop font files here or click to browse</span>
-          <div class="drop-subtitle">Accepted today: .ttf, .otf, .woff, .woff2</div>
+          <div class="drop-subtitle">
+            Build a small working set of candidates. TypeWeaver is strongest when you are making a choice between plausible options.
+          </div>
           <div class="license-row">
-            <span class="license-chip">Approved: MIT</span>
-            <span class="license-chip">Approved: Apache-2.0</span>
-            <span class="license-chip">Approved: CC0</span>
-            <span class="license-chip">Approved: Public Domain</span>
+            <span class="license-chip">MIT</span>
+            <span class="license-chip">Apache-2.0</span>
+            <span class="license-chip">CC0</span>
+            <span class="license-chip">Public Domain</span>
           </div>
           <div class="action-row">
-            <button class="primary" id="uploadBtn" disabled>Ingest selected fonts</button>
-            <span class="muted">The backend applies policy and records approval status.</span>
+            <button class="primary" id="uploadBtn" disabled>Upload and prepare</button>
+            <span class="muted">Upload a few. Then choose one primary font and one comparison font.</span>
           </div>
         </label>
         <div class="upload-msg" id="uploadMsg"></div>
       </section>
 
-      <section class="panel">
+      <section class="card panel">
         <div class="panel-head">
           <div>
-            <h2>Pick the environment</h2>
-            <p>Profiles are presented as real scenarios so the benchmark feels closer to a use case than a config flag.</p>
+            <span class="section-kicker">Conditions</span>
+            <h2>Pick a test scenario</h2>
+            <p>
+              Choose the environment you care about. A good font should not only look good in the easy case.
+            </p>
           </div>
-          <div class="status-copy" id="selectedScenarioCopy">Selected scenario: Web light default</div>
+          <div class="status-copy" id="selectedScenarioCopy">Selected scenario: Everyday web</div>
         </div>
         <div class="scenario-grid" id="scenarioGrid"></div>
       </section>
 
-      <section class="panel">
+      <section class="card panel">
         <div class="panel-head">
           <div>
-            <h2>Benchmark story</h2>
-            <p>A friendlier report view for the same deterministic JSON underneath.</p>
+            <span class="section-kicker">Comparison</span>
+            <h2>Compare two fonts</h2>
+            <p>
+              Set a primary font and an optional comparison font from the library. Then run both through the same scenario and compare the result side by side.
+            </p>
+          </div>
+          <div class="compare-actions">
+            <button class="primary" id="runCompareBtn" disabled>Run comparison</button>
+            <button class="secondary" id="clearCompareBtn" disabled>Clear comparison font</button>
+          </div>
+        </div>
+
+        <div class="compare-summary">
+          <div class="summary-chips" id="compareSummaryChips">
+            <span class="summary-chip primary-chip">Primary: none</span>
+            <span class="summary-chip compare-chip">Comparison: none</span>
+          </div>
+        </div>
+
+        <div class="empty-state" id="compareEmpty">
+          Pick a primary font and a comparison font from the library. Then run comparison to see specimens and scores next to each other.
+        </div>
+
+        <div id="compareView" style="display:none">
+          <div class="compare-result-grid" id="compareResultGrid"></div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Single report</span>
+            <h2>Your report card</h2>
+            <p>
+              Run a single-font test when you want the fuller readout for one candidate.
+            </p>
           </div>
           <div class="control-row">
-            <button class="primary" id="runBenchBtn" disabled>Run stress test</button>
+            <button class="primary" id="runBenchBtn" disabled>Run single-font report</button>
           </div>
         </div>
 
         <div class="empty-state" id="reportEmpty">
-          Choose a font from the registry and a scenario above. The report will summarize score, density,
-          corpus coverage, and likely confusion pressure in plain language.
+          Pick a primary font from the library, choose a scenario above, and run a report.
         </div>
 
         <div id="reportView" style="display:none">
           <div class="metric-grid" id="metricGrid"></div>
           <div class="story-grid" id="storyGrid"></div>
           <div class="specimen-card">
-            <h3>Specimen snapshot</h3>
+            <h3>Specimen preview</h3>
             <div class="specimen-meta" id="specimenMeta"></div>
             <div class="specimen-showcase">
               <p class="specimen-lead" id="specimenLead">A quick brown fox jumps over the lazy dog.</p>
-              <p class="specimen-body" id="specimenBody">
-                O0 I l 1 S5 B8 rn m cl d
-              </p>
+              <p class="specimen-body" id="specimenBody">O0 I l 1 S5 B8 rn m cl d</p>
               <div class="specimen-detail" id="specimenDetail"></div>
             </div>
           </div>
@@ -737,27 +951,31 @@
     </div>
 
     <aside class="stack">
-      <section class="panel">
+      <section class="card panel">
         <div class="panel-head">
           <div>
-            <h2>Registry</h2>
-            <p>Select one font to focus on. Approved and quarantined assets stay visible so you can see policy decisions.</p>
+            <span class="section-kicker">Library</span>
+            <h2>Your font library</h2>
+            <p>
+              Click once to set the primary font. Click the secondary action to use a font as the comparison candidate.
+            </p>
           </div>
         </div>
         <div class="font-list" id="registryList">
-          <div class="empty-state">Loading registry...</div>
+          <div class="empty-state">Loading fonts...</div>
         </div>
       </section>
 
-      <section class="panel">
+      <section class="card panel">
         <div class="panel-head">
           <div>
-            <h2>Current focus</h2>
-            <p>What you are about to benchmark.</p>
+            <span class="section-kicker">Selection</span>
+            <h2>Current selection</h2>
+            <p>What you are testing right now.</p>
           </div>
         </div>
-        <div class="empty-state" id="selectionSummary">
-          No font selected yet. Pick one from the registry to activate the benchmark flow.
+        <div class="selection-grid" id="selectionSummary">
+          <div class="empty-state">No font selected yet.</div>
         </div>
       </section>
     </aside>
@@ -767,24 +985,24 @@
 <script>
 const scenarioDefinitions = {
   web_light_default: {
-    title: "Web light default",
-    description: "A balanced desktop-web baseline with cleaner rendering and less hostile contrast pressure.",
-    tags: ["desktop feel", "comfortable contrast", "baseline reading"],
-    narrative: "Good for evaluating a font under more forgiving web conditions before pushing it into harsher scenarios."
+    title: "Everyday web",
+    description: "A comfortable baseline for websites and product pages on brighter screens with more forgiving contrast.",
+    tags: ["web", "reading", "safer baseline"],
+    narrative: "A good first pass for the kind of environment where many fonts initially look fine."
   },
   mobile_dark_low_contrast: {
-    title: "Mobile dark low contrast",
-    description: "A tighter, darker, more failure-prone environment that penalizes ambiguity much faster.",
-    tags: ["small text", "dark UI", "low contrast"],
-    narrative: "Closer to the place where friendly typography starts to get punished: compact interfaces and weak separation."
+    title: "Phone on dark mode",
+    description: "A tighter, harder setting for smaller text, darker interfaces, and weaker contrast where legibility starts to get tested fast.",
+    tags: ["mobile", "dark UI", "small text"],
+    narrative: "Closer to the point where fonts stop looking polished and start showing cracks."
   }
 };
 
 const scoreNarratives = [
-  { limit: 0.85, text: "Strong run. The font stays composed and the benchmark signals healthy resilience." },
-  { limit: 0.65, text: "Promising, but not bulletproof. It likely works well in normal conditions and starts to wobble under stress." },
-  { limit: 0.4, text: "Mixed result. You should expect noticeable brittleness in the chosen scenario." },
-  { limit: 0, text: "Rough outcome. The current scenario is exposing major weakness or lack of baseline coverage." }
+  { limit: 0.85, text: "Strong result. This font looks steady in the selected scenario." },
+  { limit: 0.65, text: "Good overall, but it starts to show strain when conditions get less forgiving." },
+  { limit: 0.4, text: "Mixed result. It may work in some contexts, but you should expect visible weakness here." },
+  { limit: 0, text: "Fragile in this setting. This scenario is exposing clear readability problems." }
 ];
 
 const dropZone = document.getElementById("dropZone");
@@ -796,6 +1014,12 @@ const registryList = document.getElementById("registryList");
 const selectionSummary = document.getElementById("selectionSummary");
 const selectedScenarioCopy = document.getElementById("selectedScenarioCopy");
 const runBenchBtn = document.getElementById("runBenchBtn");
+const runCompareBtn = document.getElementById("runCompareBtn");
+const clearCompareBtn = document.getElementById("clearCompareBtn");
+const compareSummaryChips = document.getElementById("compareSummaryChips");
+const compareEmpty = document.getElementById("compareEmpty");
+const compareView = document.getElementById("compareView");
+const compareResultGrid = document.getElementById("compareResultGrid");
 const reportEmpty = document.getElementById("reportEmpty");
 const reportView = document.getElementById("reportView");
 const metricGrid = document.getElementById("metricGrid");
@@ -806,16 +1030,13 @@ const specimenDetail = document.getElementById("specimenDetail");
 
 let selectedFiles = [];
 let currentFont = null;
+let compareFont = null;
 let currentScenario = "web_light_default";
 let latestRegistry = [];
 
 function formatBytes(bytes) {
-  if (bytes >= 1024 * 1024) {
-    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
-  }
-  if (bytes >= 1024) {
-    return (bytes / 1024).toFixed(1) + " KB";
-  }
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  if (bytes >= 1024) return (bytes / 1024).toFixed(1) + " KB";
   return bytes + " B";
 }
 
@@ -825,6 +1046,41 @@ function titleCaseStatus(status) {
 
 function statusClass(status) {
   return "status-" + status;
+}
+
+function classifyScore(score) {
+  return scoreNarratives.find(entry => score >= entry.limit).text;
+}
+
+function setPrimaryFont(asset) {
+  currentFont = asset || null;
+  if (compareFont && currentFont && compareFont.id === currentFont.id) compareFont = null;
+  renderRegistry(latestRegistry);
+  renderSelectionSummary();
+  updateButtons();
+}
+
+function setCompareFont(asset) {
+  if (!asset) {
+    compareFont = null;
+  } else if (currentFont && currentFont.id === asset.id) {
+    compareFont = null;
+  } else {
+    compareFont = asset;
+  }
+  renderRegistry(latestRegistry);
+  renderSelectionSummary();
+  updateButtons();
+}
+
+function updateButtons() {
+  runBenchBtn.disabled = !currentFont;
+  runCompareBtn.disabled = !(currentFont && compareFont);
+  clearCompareBtn.disabled = !compareFont;
+  compareSummaryChips.innerHTML = `
+    <span class="summary-chip primary-chip">Primary: ${currentFont ? (currentFont.family_name || currentFont.file_name) : "none"}</span>
+    <span class="summary-chip compare-chip">Comparison: ${compareFont ? (compareFont.family_name || compareFont.file_name) : "none"}</span>
+  `;
 }
 
 function renderScenarios() {
@@ -875,24 +1131,19 @@ fileInput.addEventListener("change", () => updateSelectedFiles(fileInput.files))
 
 uploadBtn.addEventListener("click", async event => {
   event.stopPropagation();
-  if (selectedFiles.length === 0) {
-    return;
-  }
+  if (selectedFiles.length === 0) return;
 
   uploadBtn.disabled = true;
-  uploadMsg.textContent = "Uploading fonts for ingestion...";
+  uploadMsg.textContent = "Uploading fonts...";
 
   const formData = new FormData();
   selectedFiles.forEach(file => formData.append("file", file));
 
   try {
-    const response = await fetch("/api/fonts/ingest", {
-      method: "POST",
-      body: formData
-    });
+    const response = await fetch("/api/fonts/ingest", { method: "POST", body: formData });
     const payload = await response.json();
     if (response.ok) {
-      uploadMsg.textContent = `Ingested ${payload.ingested} file(s). Registry now contains ${payload.total} asset(s).`;
+      uploadMsg.textContent = `Added ${payload.ingested} font file(s). Your library now has ${payload.total} item(s).`;
       selectedFiles = [];
       fileInput.value = "";
       dropTitle.textContent = "Drop font files here or click to browse";
@@ -910,47 +1161,67 @@ uploadBtn.addEventListener("click", async event => {
 function renderRegistry(assets) {
   latestRegistry = assets;
   if (!assets.length) {
-    registryList.innerHTML = `<div class="empty-state">No fonts registered yet. Start by dropping a few files into the upload area.</div>`;
+    registryList.innerHTML = `<div class="empty-state">No fonts yet. Start by uploading one above, then choose a primary and comparison font here.</div>`;
     currentFont = null;
+    compareFont = null;
     renderSelectionSummary();
-    updateRunButton();
+    updateButtons();
     return;
   }
 
-  if (currentFont) {
-    const refreshed = assets.find(asset => asset.id === currentFont.id);
-    currentFont = refreshed || null;
-  }
+  if (currentFont) currentFont = assets.find(asset => asset.id === currentFont.id) || null;
+  if (compareFont) compareFont = assets.find(asset => asset.id === compareFont.id) || null;
 
-  registryList.innerHTML = assets.map(asset => `
-    <article class="font-card ${currentFont && currentFont.id === asset.id ? "selected" : ""}" data-font-id="${asset.id}">
-      <div class="font-head">
-        <div>
-          <strong>${asset.family_name || asset.file_name}</strong>
-          <small>${asset.id}</small>
+  registryList.innerHTML = assets.map(asset => {
+    const primary = currentFont && currentFont.id === asset.id;
+    const compare = compareFont && compareFont.id === asset.id;
+    return `
+      <article class="font-card ${primary ? "selected-primary" : ""} ${compare ? "selected-compare" : ""}" data-font-id="${asset.id}">
+        <div class="font-head">
+          <div>
+            <strong>${asset.family_name || asset.file_name}</strong>
+            <small>${asset.id}</small>
+          </div>
+          <span class="status ${statusClass(asset.status)}">${titleCaseStatus(asset.status)}</span>
         </div>
-        <span class="status ${statusClass(asset.status)}">${titleCaseStatus(asset.status)}</span>
-      </div>
-      <div class="font-meta">
-        <span class="tag">${asset.file_name}</span>
-        <span class="tag">${asset.license_normalized}</span>
-        <span class="tag">${formatBytes(asset.file_size_bytes)}</span>
-      </div>
-    </article>
-  `).join("");
+        <div class="font-meta" style="margin:12px 0 14px;">
+          <span class="tag">${asset.file_name}</span>
+          <span class="tag">${asset.license_normalized}</span>
+          <span class="tag">${formatBytes(asset.file_size_bytes)}</span>
+        </div>
+        <div class="action-row">
+          <button class="secondary set-primary-btn" data-font-id="${asset.id}">${primary ? "Primary font" : "Set as primary"}</button>
+          <button class="secondary set-compare-btn" data-font-id="${asset.id}" ${primary ? "disabled" : ""}>${compare ? "Comparison font" : "Set for compare"}</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  registryList.querySelectorAll(".set-primary-btn").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      const asset = latestRegistry.find(candidate => candidate.id === button.dataset.fontId);
+      setPrimaryFont(asset || null);
+    });
+  });
+
+  registryList.querySelectorAll(".set-compare-btn").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      const asset = latestRegistry.find(candidate => candidate.id === button.dataset.fontId);
+      setCompareFont(asset || null);
+    });
+  });
 
   registryList.querySelectorAll(".font-card").forEach(card => {
     card.addEventListener("click", () => {
       const asset = latestRegistry.find(candidate => candidate.id === card.dataset.fontId);
-      currentFont = asset || null;
-      renderRegistry(latestRegistry);
-      renderSelectionSummary();
-      updateRunButton();
+      setPrimaryFont(asset || null);
     });
   });
 
   renderSelectionSummary();
-  updateRunButton();
+  updateButtons();
 }
 
 async function loadRegistry() {
@@ -959,41 +1230,46 @@ async function loadRegistry() {
     const payload = await response.json();
     renderRegistry(payload.assets || []);
   } catch (error) {
-    registryList.innerHTML = `<div class="empty-state">Failed to load registry: ${error.message}</div>`;
+    registryList.innerHTML = `<div class="empty-state">Failed to load fonts: ${error.message}</div>`;
   }
 }
 
 function renderSelectionSummary() {
   const scenario = scenarioDefinitions[currentScenario];
-  if (!currentFont) {
-    selectionSummary.innerHTML = `
-      <strong style="display:block; margin-bottom:8px">No font selected yet.</strong>
-      Select a registry entry, then run <em>${scenario.title}</em> to see how it behaves.
-    `;
-    return;
-  }
 
-  selectionSummary.innerHTML = `
-    <strong style="display:block; margin-bottom:8px">${currentFont.family_name || currentFont.file_name}</strong>
-    <div class="font-meta" style="margin:0 0 12px">
-      <span class="tag">${currentFont.id}</span>
-      <span class="tag">${currentFont.license_normalized}</span>
-      <span class="tag">${formatBytes(currentFont.file_size_bytes)}</span>
+  const primaryHtml = currentFont ? `
+    <div class="selection-card">
+      <h3>Primary font</h3>
+      <p><strong>${currentFont.family_name || currentFont.file_name}</strong></p>
+      <div class="font-meta" style="margin:12px 0;">
+        <span class="tag">${currentFont.id}</span>
+        <span class="tag">${currentFont.license_normalized}</span>
+        <span class="tag">${formatBytes(currentFont.file_size_bytes)}</span>
+      </div>
+      <div class="status ${statusClass(currentFont.status)}" style="margin-bottom:12px">${titleCaseStatus(currentFont.status)}</div>
+      <p>Scenario: <strong>${scenario.title}</strong><br>${scenario.narrative}</p>
     </div>
-    <div class="status ${statusClass(currentFont.status)}" style="margin-bottom:12px">${titleCaseStatus(currentFont.status)}</div>
-    <div class="muted" style="line-height:1.6">
-      Scenario: <strong style="color:var(--ink)">${scenario.title}</strong><br>
-      ${scenario.narrative}
-    </div>
+  ` : `
+    <div class="empty-state">No primary font selected yet.</div>
   `;
-}
 
-function updateRunButton() {
-  runBenchBtn.disabled = !currentFont;
-}
+  const compareHtml = compareFont ? `
+    <div class="selection-card">
+      <h3>Comparison font</h3>
+      <p><strong>${compareFont.family_name || compareFont.file_name}</strong></p>
+      <div class="font-meta" style="margin:12px 0;">
+        <span class="tag">${compareFont.id}</span>
+        <span class="tag">${compareFont.license_normalized}</span>
+        <span class="tag">${formatBytes(compareFont.file_size_bytes)}</span>
+      </div>
+      <div class="status ${statusClass(compareFont.status)}" style="margin-bottom:12px">${titleCaseStatus(compareFont.status)}</div>
+      <p>Ready for side-by-side comparison in <strong>${scenario.title}</strong>.</p>
+    </div>
+  ` : `
+    <div class="empty-state">No comparison font selected yet.</div>
+  `;
 
-function classifyScore(score) {
-  return scoreNarratives.find(entry => score >= entry.limit).text;
+  selectionSummary.innerHTML = primaryHtml + compareHtml;
 }
 
 function renderReport(report) {
@@ -1005,39 +1281,39 @@ function renderReport(report) {
 
   metricGrid.innerHTML = `
     <div class="metric-card">
-      <span class="label">Overall score</span>
+      <span class="label">Overall result</span>
       <strong>${scorePercent}</strong>
       <span>${classifyScore(report.measurements.score)}</span>
     </div>
     <div class="metric-card">
       <span class="label">Coverage</span>
       <strong>${coveragePercent}%</strong>
-      <span>Estimated support across the fixed Latin corpus.</span>
+      <span>How much of the current test corpus this font appears to support.</span>
     </div>
     <div class="metric-card">
-      <span class="label">Line density</span>
+      <span class="label">Density</span>
       <strong>${lineDensity}</strong>
-      <span>Characters per corpus line, useful as a compactness proxy.</span>
+      <span>A compactness signal from the current specimen set.</span>
     </div>
     <div class="metric-card">
-      <span class="label">Confusion pressure</span>
+      <span class="label">Confusion risk</span>
       <strong>${confusionPenalty}</strong>
-      <span>Penalty applied to ambiguity-sensitive pairs in this scenario.</span>
+      <span>Pressure from lookalike pairs such as O/0, I/l/1, rn/m, and cl/d.</span>
     </div>
   `;
 
   storyGrid.innerHTML = `
     <article class="story-card">
-      <h3>Scenario readout</h3>
+      <h3>What this scenario means</h3>
       <p>${scenario.description}</p>
     </article>
     <article class="story-card">
-      <h3>Why this score happened</h3>
+      <h3>Why this font scored this way</h3>
       <p>${report.measurements.notes}</p>
     </article>
     <article class="story-card">
-      <h3>Policy status</h3>
-      <p>The selected asset is currently marked <strong>${report.font.status}</strong> under the registry's license policy.</p>
+      <h3>What to do with it</h3>
+      <p>If this looks strong, keep it in the running. If it looks brittle here, this is the kind of font that may struggle once text gets smaller or the environment gets less forgiving.</p>
     </article>
   `;
 
@@ -1053,39 +1329,98 @@ function renderReport(report) {
   reportView.style.display = "block";
 }
 
+function renderCompareCard(report, labelClass, labelText) {
+  const scorePercent = Math.round(report.measurements.score * 100);
+  const coveragePercent = Math.round(report.measurements.estimated_coverage * 100);
+  const density = report.measurements.line_density.toFixed(1);
+  const confusion = report.measurements.confusion_penalty.toFixed(2);
+  return `
+    <article class="compare-card">
+      <div class="compare-label">${labelText}</div>
+      <h3>${report.font.family_name || report.font.font_id}</h3>
+      <div class="status ${labelClass}" style="margin-bottom:10px;">${titleCaseStatus(report.font.status)}</div>
+      <div class="compare-preview">
+        <p class="display-line">A quick brown fox jumps over the lazy dog.</p>
+        <p class="body-line">Typography should stay readable when the layout gets tighter, darker, or less forgiving.</p>
+        <p class="detail-line">O0 I l 1 S5 B8 rn m cl d</p>
+      </div>
+      <div class="compare-score-row">
+        <p class="compare-score">${scorePercent}</p>
+        <div class="muted">${classifyScore(report.measurements.score)}</div>
+      </div>
+      <div class="compare-meta">
+        <div class="compare-meta-row"><span>Coverage</span><strong>${coveragePercent}%</strong></div>
+        <div class="compare-meta-row"><span>Density</span><strong>${density}</strong></div>
+        <div class="compare-meta-row"><span>Confusion risk</span><strong>${confusion}</strong></div>
+      </div>
+    </article>
+  `;
+}
+
+async function fetchReport(fontId) {
+  const response = await fetch(`/api/fonts/${fontId}/report?profile=${currentScenario}`);
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || "Report request failed");
+  return payload;
+}
+
 runBenchBtn.addEventListener("click", async () => {
-  if (!currentFont) {
-    return;
-  }
+  if (!currentFont) return;
 
   reportEmpty.style.display = "none";
   reportView.style.display = "block";
-  metricGrid.innerHTML = `
-    <div class="metric-card"><span class="label">Running</span><strong>...</strong><span>Generating benchmark report.</span></div>
-  `;
+  metricGrid.innerHTML = `<div class="metric-card"><span class="label">Running</span><strong>...</strong><span>Generating your font report.</span></div>`;
   storyGrid.innerHTML = "";
-  reportJson.textContent = "Running benchmark...";
+  reportJson.textContent = "Running report...";
   specimenMeta.textContent = `${currentFont.family_name || currentFont.file_name} | ${scenarioDefinitions[currentScenario].title}`;
   specimenDetail.textContent = "";
 
   try {
-    const response = await fetch(`/api/fonts/${currentFont.id}/report?profile=${currentScenario}`);
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error || "Report request failed");
-    }
+    const payload = await fetchReport(currentFont.id);
     renderReport(payload);
   } catch (error) {
-    metricGrid.innerHTML = `
-      <div class="metric-card"><span class="label">Error</span><strong>!</strong><span>${error.message}</span></div>
-    `;
+    metricGrid.innerHTML = `<div class="metric-card"><span class="label">Error</span><strong>!</strong><span>${error.message}</span></div>`;
     storyGrid.innerHTML = "";
-    reportJson.textContent = "Benchmark failed.";
+    reportJson.textContent = "Report failed.";
   }
+});
+
+runCompareBtn.addEventListener("click", async () => {
+  if (!(currentFont && compareFont)) return;
+
+  compareEmpty.style.display = "none";
+  compareView.style.display = "block";
+  compareResultGrid.innerHTML = `
+    <div class="compare-card"><h3>Running primary</h3><p>Generating report for ${currentFont.family_name || currentFont.file_name}.</p></div>
+    <div class="compare-card"><h3>Running comparison</h3><p>Generating report for ${compareFont.family_name || compareFont.file_name}.</p></div>
+  `;
+
+  try {
+    const [primaryReport, compareReport] = await Promise.all([
+      fetchReport(currentFont.id),
+      fetchReport(compareFont.id)
+    ]);
+
+    compareResultGrid.innerHTML =
+      renderCompareCard(primaryReport, statusClass(primaryReport.font.status), "Primary") +
+      renderCompareCard(compareReport, statusClass(compareReport.font.status), "Comparison");
+  } catch (error) {
+    compareResultGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Comparison failed: ${error.message}</div>`;
+  }
+});
+
+clearCompareBtn.addEventListener("click", () => {
+  compareFont = null;
+  renderRegistry(latestRegistry);
+  renderSelectionSummary();
+  updateButtons();
+  compareView.style.display = "none";
+  compareEmpty.style.display = "block";
 });
 
 renderScenarios();
 loadRegistry();
+updateButtons();
 </script>
 </body>
 </html>
