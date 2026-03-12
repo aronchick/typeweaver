@@ -10,9 +10,14 @@ env:
   REMOTE_DIR: /opt/typeweaver
   SERVICE: typeweaver
 
+concurrency:
+  group: deploy-typeweaver
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,69 +34,108 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
+      - name: Run tests
+        run: cargo test --all
+
       - name: Build release binary
         run: cargo build --release -p typeweaver-cli
 
-      - name: Run tests
-        run: cargo test --all
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
 
       - name: Validate deploy target
         run: |
           set -euo pipefail
           host="${{ secrets.DEPLOY_HOST }}"
-          if [ -z "$host" ]; then
-            echo "DEPLOY_HOST secret is empty or missing"
+          user="${{ secrets.DEPLOY_USER }}"
+          if [ -z "$host" ] || [ -z "$user" ]; then
+            echo "DEPLOY_HOST or DEPLOY_USER secret is empty or missing"
             exit 1
           fi
-          echo "Checking SSH reachability for $host:22"
+          echo "Checking SSH reachability for ${user}@${host}:22"
           python3 -c 'import socket, sys; host = sys.argv[1]; s = socket.create_connection((host, 22), timeout=10); s.close(); print(f"SSH reachable on {host}:22")' "$host"
 
       - name: Set up SSH
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -T 10 -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Provision remote directory & user
+      - name: Verify SSH
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} bash -s << 'REMOTE'
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'whoami && hostname'
+
+      - name: Provision remote directory
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
-            useradd --system --shell /usr/sbin/nologin typeweaver 2>/dev/null || true
-            mkdir -p /opt/typeweaver/.typeweaver
-            chown -R typeweaver:typeweaver /opt/typeweaver
+            sudo useradd --system --shell /usr/sbin/nologin typeweaver 2>/dev/null || true
+            sudo mkdir -p /opt/typeweaver/.typeweaver
+            sudo chown -R typeweaver:typeweaver /opt/typeweaver
           REMOTE
 
       - name: Deploy binary
         run: |
           rsync -avz --progress \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             target/release/typeweaver-cli \
-            -e "ssh -i ~/.ssh/deploy_key" \
-            root@${{ secrets.DEPLOY_HOST }}:${{ env.REMOTE_DIR }}/typeweaver
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} \
-            "chown typeweaver:typeweaver ${{ env.REMOTE_DIR }}/typeweaver && chmod +x ${{ env.REMOTE_DIR }}/typeweaver"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver-cli"
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
+            set -euo pipefail
+            sudo install -o typeweaver -g typeweaver -m 0755 /tmp/typeweaver-cli /opt/typeweaver/typeweaver
+            rm -f /tmp/typeweaver-cli
+          REMOTE
 
       - name: Deploy systemd service
         run: |
-          scp -i ~/.ssh/deploy_key \
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             deploy/typeweaver.service \
-            root@${{ secrets.DEPLOY_HOST }}:/etc/systemd/system/${{ env.SERVICE }}.service
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} \
-            "systemctl daemon-reload && systemctl enable ${{ env.SERVICE }} && systemctl restart ${{ env.SERVICE }}"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver.service"
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
+            set -euo pipefail
+            sudo install -m 0644 /tmp/typeweaver.service /etc/systemd/system/typeweaver.service
+            rm -f /tmp/typeweaver.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable typeweaver
+            sudo systemctl restart typeweaver
+          REMOTE
 
       - name: Deploy Caddy config
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} "mkdir -p /etc/caddy/sites"
-          scp -i ~/.ssh/deploy_key \
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             deploy/caddy-typeweaver.caddy \
-            root@${{ secrets.DEPLOY_HOST }}:/etc/caddy/sites/typeweaver.caddy
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} \
-            "caddy validate --config /etc/caddy/Caddyfile 2>/dev/null && caddy reload --config /etc/caddy/Caddyfile || true"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver.caddy"
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
+            set -euo pipefail
+            sudo mkdir -p /etc/caddy/sites
+            sudo install -m 0644 /tmp/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
+            rm -f /tmp/typeweaver.caddy
+            sudo caddy validate --config /etc/caddy/Caddyfile
+            sudo caddy reload --config /etc/caddy/Caddyfile
+          REMOTE
 
       - name: Health check
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} bash -s << 'REMOTE'
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
             sleep 5
             curl -sf --max-time 10 http://127.0.0.1:3500/okz    && echo "/okz OK"
@@ -101,5 +145,7 @@ jobs:
 
       - name: Smoke test (ingest fixtures)
         run: |
-          ssh -i ~/.ssh/deploy_key root@${{ secrets.DEPLOY_HOST }} \
-            "/opt/typeweaver/typeweaver ingest /opt/typeweaver/.typeweaver --registry-root /opt/typeweaver/.typeweaver 2>/dev/null || true"
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'sudo -u typeweaver /opt/typeweaver/typeweaver ingest /opt/typeweaver/.typeweaver --registry-root /opt/typeweaver/.typeweaver 2>/dev/null || true'
