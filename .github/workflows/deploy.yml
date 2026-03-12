@@ -125,10 +125,14 @@ jobs:
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
             sudo mkdir -p /etc/caddy/sites
+            sudo install -d -o caddy -g caddy -m 0755 /var/log/caddy
+            sudo touch /var/log/caddy/typeweaver.log
+            sudo chown caddy:caddy /var/log/caddy/typeweaver.log
+            sudo chmod 0644 /var/log/caddy/typeweaver.log
             sudo install -m 0644 ~/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
             rm -f ~/typeweaver.caddy
             sudo caddy validate --config /etc/caddy/Caddyfile
-            sudo caddy reload --config /etc/caddy/Caddyfile
+            sudo systemctl reload caddy
           REMOTE
 
       - name: Health check
