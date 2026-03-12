@@ -88,13 +88,13 @@ jobs:
           rsync -avz --progress \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             target/release/typeweaver-cli \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver-cli"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/typeweaver-cli"
           ssh -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=yes \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
-            sudo install -o typeweaver -g typeweaver -m 0755 /tmp/typeweaver-cli /opt/typeweaver/typeweaver
-            rm -f /tmp/typeweaver-cli
+            sudo install -o typeweaver -g typeweaver -m 0755 ~/typeweaver-cli /opt/typeweaver/typeweaver
+            rm -f ~/typeweaver-cli
           REMOTE
 
       - name: Deploy systemd service
@@ -102,13 +102,13 @@ jobs:
           rsync -avz \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             deploy/typeweaver.service \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver.service"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/typeweaver.service"
           ssh -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=yes \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
-            sudo install -m 0644 /tmp/typeweaver.service /etc/systemd/system/typeweaver.service
-            rm -f /tmp/typeweaver.service
+            sudo install -m 0644 ~/typeweaver.service /etc/systemd/system/typeweaver.service
+            rm -f ~/typeweaver.service
             sudo systemctl daemon-reload
             sudo systemctl enable typeweaver
             sudo systemctl restart typeweaver
@@ -119,14 +119,14 @@ jobs:
           rsync -avz \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
             deploy/caddy-typeweaver.caddy \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/typeweaver.caddy"
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/typeweaver.caddy"
           ssh -i ~/.ssh/deploy_key \
             -o StrictHostKeyChecking=yes \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
             sudo mkdir -p /etc/caddy/sites
-            sudo install -m 0644 /tmp/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
-            rm -f /tmp/typeweaver.caddy
+            sudo install -m 0644 ~/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
+            rm -f ~/typeweaver.caddy
             sudo caddy validate --config /etc/caddy/Caddyfile
             sudo caddy reload --config /etc/caddy/Caddyfile
           REMOTE
