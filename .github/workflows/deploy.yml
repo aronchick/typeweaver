@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -114,7 +116,22 @@ jobs:
             sudo systemctl restart typeweaver
           REMOTE
 
+      - name: Detect Caddy config changes
+        id: caddy_changes
+        run: |
+          set -euo pipefail
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            if git diff --quiet HEAD^ HEAD -- deploy/caddy-typeweaver.caddy; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy Caddy config
+        if: steps.caddy_changes.outputs.changed == 'true'
         run: |
           rsync -avz \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
@@ -124,15 +141,15 @@ jobs:
             -o StrictHostKeyChecking=yes \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" <<'REMOTE'
             set -euo pipefail
-            sudo mkdir -p /etc/caddy/sites
-            sudo install -d -o caddy -g caddy -m 0755 /var/log/caddy
-            sudo touch /var/log/caddy/typeweaver.log
-            sudo chown caddy:caddy /var/log/caddy/typeweaver.log
-            sudo chmod 0644 /var/log/caddy/typeweaver.log
-            sudo install -m 0644 ~/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
+            sudo -n mkdir -p /etc/caddy/sites
+            sudo -n install -d -o caddy -g caddy -m 0755 /var/log/caddy
+            sudo -n touch /var/log/caddy/typeweaver.log
+            sudo -n chown caddy:caddy /var/log/caddy/typeweaver.log
+            sudo -n chmod 0644 /var/log/caddy/typeweaver.log
+            sudo -n install -m 0644 ~/typeweaver.caddy /etc/caddy/sites/typeweaver.caddy
             rm -f ~/typeweaver.caddy
-            sudo caddy validate --config /etc/caddy/Caddyfile
-            sudo systemctl reload caddy
+            sudo -n caddy validate --config /etc/caddy/Caddyfile
+            sudo -n systemctl reload caddy
           REMOTE
 
       - name: Health check
