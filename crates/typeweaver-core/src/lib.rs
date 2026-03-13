@@ -367,8 +367,14 @@ impl ReportCard {
                 json.push_str("  \"ocr_score\": {\n");
                 push_json_string_field(&mut json, "expected", &ocr.expected, true);
                 push_json_string_field(&mut json, "recognized", &ocr.recognized, true);
-                json.push_str(&format!("    \"char_accuracy\": {:.4},\n", ocr.char_accuracy));
-                json.push_str(&format!("    \"word_accuracy\": {:.4}\n", ocr.word_accuracy));
+                json.push_str(&format!(
+                    "    \"char_accuracy\": {:.4},\n",
+                    ocr.char_accuracy
+                ));
+                json.push_str(&format!(
+                    "    \"word_accuracy\": {:.4}\n",
+                    ocr.word_accuracy
+                ));
                 json.push_str("  }\n");
             }
             None => {

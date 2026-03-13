@@ -175,6 +175,13 @@ Run the local service:
 cargo run -- serve
 ```
 
+Web UI routes:
+
+- `/` serves the marketing homepage.
+- `/tool` serves the actual playground.
+- The tool defaults to curated Google Fonts starters and syncs the selected starter into the existing registry before generating a JSON report.
+- Upload is still available inside `/tool`, with an optional declared-license sidecar generated from the UI.
+
 ## Output layout
 
 By default, commands write under `.typeweaver`:

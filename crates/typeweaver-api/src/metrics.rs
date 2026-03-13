@@ -26,7 +26,9 @@ impl Metrics {
                 "typeweaver_request_duration_seconds",
                 "HTTP request duration in seconds",
             )
-            .buckets(vec![0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]),
+            .buckets(vec![
+                0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
+            ]),
         )
         .unwrap();
         let fonts_ingested_total =
@@ -44,13 +46,13 @@ impl Metrics {
         .unwrap();
         let active_requests =
             IntGauge::new("typeweaver_active_requests", "Currently in-flight requests").unwrap();
-        let upload_bytes_total =
-            IntCounter::new("typeweaver_upload_bytes_total", "Total bytes uploaded via ingest")
-                .unwrap();
+        let upload_bytes_total = IntCounter::new(
+            "typeweaver_upload_bytes_total",
+            "Total bytes uploaded via ingest",
+        )
+        .unwrap();
 
-        registry
-            .register(Box::new(requests_total.clone()))
-            .unwrap();
+        registry.register(Box::new(requests_total.clone())).unwrap();
         registry
             .register(Box::new(request_duration.clone()))
             .unwrap();
@@ -60,12 +62,8 @@ impl Metrics {
         registry
             .register(Box::new(bench_runs_total.clone()))
             .unwrap();
-        registry
-            .register(Box::new(ocr_runs_total.clone()))
-            .unwrap();
-        registry
-            .register(Box::new(registry_size.clone()))
-            .unwrap();
+        registry.register(Box::new(ocr_runs_total.clone())).unwrap();
+        registry.register(Box::new(registry_size.clone())).unwrap();
         registry
             .register(Box::new(api_calls_total.clone()))
             .unwrap();

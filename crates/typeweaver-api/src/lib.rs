@@ -5,12 +5,12 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
 
+use axum::Router;
 use axum::extract::{FromRequestParts, Multipart, Query, State};
 use axum::http::request::Parts;
 use axum::http::{HeaderValue, StatusCode};
 use axum::response::Response;
 use axum::routing::{get, post};
-use axum::Router;
 use rust_embed::Embed;
 use serde::Deserialize;
 use tokio::sync::Mutex;
@@ -78,7 +78,9 @@ impl FromRequestParts<Arc<Mutex<AppState>>> for ValidToken {
 
 /// Build the application router.
 fn app(registry_root: PathBuf) -> Router {
-    let api_token = std::env::var("TYPEWEAVER_API_TOKEN").ok().filter(|s| !s.is_empty());
+    let api_token = std::env::var("TYPEWEAVER_API_TOKEN")
+        .ok()
+        .filter(|s| !s.is_empty());
     let state = Arc::new(Mutex::new(AppState {
         registry_root,
         metrics: Metrics::new(),
@@ -100,7 +102,11 @@ fn app(registry_root: PathBuf) -> Router {
 }
 
 /// Start the HTTP server.
-pub async fn serve(registry_root: PathBuf, host: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn serve(
+    registry_root: PathBuf,
+    host: &str,
+    port: u16,
+) -> Result<(), Box<dyn std::error::Error>> {
     let app = app(registry_root);
     let addr = format!("{host}:{port}");
     tracing::info!("listening on {}", addr);
@@ -129,7 +135,10 @@ async fn handle_ingest(
     let registry_gauge = st.metrics.registry_size.clone();
     let upload_bytes = st.metrics.upload_bytes_total.clone();
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["ingest"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["ingest"])
+        .inc();
     st.metrics.active_requests.inc();
     let duration_hist = st.metrics.request_duration.clone();
     let active_gauge = st.metrics.active_requests.clone();
@@ -148,10 +157,7 @@ async fn handle_ingest(
     let mut saved_count: u64 = 0;
     let mut total_bytes: u64 = 0;
     while let Ok(Some(field)) = multipart.next_field().await {
-        let file_name = field
-            .file_name()
-            .unwrap_or("upload.ttf")
-            .to_string();
+        let file_name = field.file_name().unwrap_or("upload.ttf").to_string();
         let data = match field.bytes().await {
             Ok(d) => d,
             Err(e) => {
@@ -219,15 +225,15 @@ async fn handle_ingest(
     json_response(StatusCode::OK, &body)
 }
 
-async fn handle_list(
-    State(state): State<Arc<Mutex<AppState>>>,
-    _auth: ValidToken,
-) -> Response {
+async fn handle_list(State(state): State<Arc<Mutex<AppState>>>, _auth: ValidToken) -> Response {
     let timer = Instant::now();
     let st = state.lock().await;
     let reg_dir = registry_dir(&st.registry_root);
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["list"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["list"])
+        .inc();
     st.metrics.active_requests.inc();
     let duration_hist = st.metrics.request_duration.clone();
     let active_gauge = st.metrics.active_requests.clone();
@@ -257,7 +263,10 @@ async fn handle_get_font(
     let st = state.lock().await;
     let reg_dir = registry_dir(&st.registry_root);
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["get_font"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["get_font"])
+        .inc();
     st.metrics.active_requests.inc();
     let duration_hist = st.metrics.request_duration.clone();
     let active_gauge = st.metrics.active_requests.clone();
@@ -278,7 +287,10 @@ async fn handle_get_font(
                 "{{\"id\": \"{}\", \"file_name\": \"{}\", \"family_name\": {}, \"status\": \"{}\"}}",
                 asset.id,
                 asset.file_name,
-                asset.family_name.as_ref().map_or("null".to_string(), |n| format!("\"{}\"", n)),
+                asset
+                    .family_name
+                    .as_ref()
+                    .map_or("null".to_string(), |n| format!("\"{}\"", n)),
                 asset.status.as_str()
             );
             json_response(StatusCode::OK, &body)
@@ -306,7 +318,10 @@ async fn handle_report(
     let reg_dir = registry_dir(&st.registry_root);
     let bench_counter = st.metrics.bench_runs_total.clone();
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["report"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["report"])
+        .inc();
     st.metrics.active_requests.inc();
     let duration_hist = st.metrics.request_duration.clone();
     let active_gauge = st.metrics.active_requests.clone();
@@ -362,7 +377,10 @@ async fn handle_healthz(State(state): State<Arc<Mutex<AppState>>>) -> Response {
     let uptime_seconds = st.started_at.elapsed().as_secs();
     let reg_dir = registry_dir(&st.registry_root);
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["healthz"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["healthz"])
+        .inc();
     drop(st);
 
     let version = env!("CARGO_PKG_VERSION");
@@ -381,16 +399,16 @@ async fn handle_healthz(State(state): State<Arc<Mutex<AppState>>>) -> Response {
     json_response(StatusCode::OK, &body)
 }
 
-async fn handle_varz(
-    State(state): State<Arc<Mutex<AppState>>>,
-    _auth: ValidToken,
-) -> Response {
+async fn handle_varz(State(state): State<Arc<Mutex<AppState>>>, _auth: ValidToken) -> Response {
     let timer = Instant::now();
     let st = state.lock().await;
     let encoder = prometheus::TextEncoder::new();
     let metric_families = st.metrics.registry.gather();
     st.metrics.requests_total.inc();
-    st.metrics.api_calls_total.with_label_values(&["varz"]).inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["varz"])
+        .inc();
     st.metrics.active_requests.inc();
     let duration_hist = st.metrics.request_duration.clone();
     let active_gauge = st.metrics.active_requests.clone();
@@ -423,15 +441,20 @@ async fn handle_static(
     {
         let st = state.lock().await;
         st.metrics.requests_total.inc();
-        st.metrics.api_calls_total.with_label_values(&["static"]).inc();
+        st.metrics
+            .api_calls_total
+            .with_label_values(&["static"])
+            .inc();
     }
 
-    let path = uri.path().trim_start_matches('/');
-    let path = if path.is_empty() { "index.html" } else { path };
+    let path = match resolve_static_path(uri.path()) {
+        Some(path) => path,
+        None => return error_response(StatusCode::NOT_FOUND, "not found"),
+    };
 
-    match StaticAssets::get(path) {
+    match StaticAssets::get(&path) {
         Some(content) => {
-            let mime = mime_guess::from_path(path)
+            let mime = mime_guess::from_path(&path)
                 .first_or_octet_stream()
                 .to_string();
             let mut resp = Response::new(axum::body::Body::from(content.data.to_vec()));
@@ -449,13 +472,33 @@ async fn handle_static(
 // Helpers
 // ---------------------------------------------------------------------------
 
+fn resolve_static_path(request_path: &str) -> Option<String> {
+    let trimmed = request_path.trim_matches('/');
+    let path = if trimmed.is_empty() {
+        "index.html".to_string()
+    } else {
+        trimmed.to_string()
+    };
+
+    if StaticAssets::get(&path).is_some() {
+        return Some(path);
+    }
+
+    if !path.contains('.') {
+        let nested = format!("{path}/index.html");
+        if StaticAssets::get(&nested).is_some() {
+            return Some(nested);
+        }
+    }
+
+    None
+}
+
 fn json_response(status: StatusCode, body: &str) -> Response {
     let mut resp = Response::new(axum::body::Body::from(body.to_string()));
     *resp.status_mut() = status;
-    resp.headers_mut().insert(
-        "content-type",
-        HeaderValue::from_static("application/json"),
-    );
+    resp.headers_mut()
+        .insert("content-type", HeaderValue::from_static("application/json"));
     resp
 }
 
@@ -496,4 +539,35 @@ fn get_memory_rss_bytes() -> u64 {
                 })
         })
         .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_static_path;
+
+    #[test]
+    fn resolves_root_and_nested_static_routes() {
+        assert_eq!(resolve_static_path("/"), Some("index.html".to_string()));
+        assert_eq!(
+            resolve_static_path("/tool"),
+            Some("tool/index.html".to_string())
+        );
+        assert_eq!(
+            resolve_static_path("/tool/"),
+            Some("tool/index.html".to_string())
+        );
+    }
+
+    #[test]
+    fn leaves_asset_paths_intact() {
+        assert_eq!(
+            resolve_static_path("/tool.css"),
+            Some("tool.css".to_string())
+        );
+    }
+
+    #[test]
+    fn rejects_missing_static_routes() {
+        assert_eq!(resolve_static_path("/missing"), None);
+    }
 }

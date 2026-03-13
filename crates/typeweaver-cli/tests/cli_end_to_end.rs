@@ -267,7 +267,11 @@ fn ingest_is_idempotent_for_same_directory() {
         "--registry-root",
         &registry_root.to_string_lossy(),
     ]);
-    assert!(first.status.success(), "first ingest stderr: {:?}", first.stderr);
+    assert!(
+        first.status.success(),
+        "first ingest stderr: {:?}",
+        first.stderr
+    );
 
     let registry_path = registry_root.join("registry").join("registry.json");
     let initial_registry = fs::read_to_string(&registry_path).expect("registry should exist");

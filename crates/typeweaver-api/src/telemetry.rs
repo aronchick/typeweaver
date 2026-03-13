@@ -1,8 +1,8 @@
 use opentelemetry::KeyValue;
 use opentelemetry_sdk::Resource;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 /// Initialise tracing with optional OTLP export.
 ///
@@ -30,10 +30,7 @@ pub fn init_tracer() {
             }
         };
 
-        let resource = Resource::new(vec![KeyValue::new(
-            "service.name",
-            "typeweaver-api",
-        )]);
+        let resource = Resource::new(vec![KeyValue::new("service.name", "typeweaver-api")]);
 
         let provider = opentelemetry_sdk::trace::TracerProvider::builder()
             .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)

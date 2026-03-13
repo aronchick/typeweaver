@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeWeaver Tool | Playground</title>
+<meta
+  name="description"
+  content="Start from a known Google Font, stress it with TypeWeaver scenarios, and generate a JSON report card."
+>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+  rel="stylesheet"
+>
+<link rel="stylesheet" href="/tool.css">
+<script src="/tool.js" defer></script>
+</head>
+<body>
+<div class="tool-shell">
+  <header class="tool-topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">Tw</span>
+      <span>TypeWeaver</span>
+    </a>
+    <div class="topbar-copy">
+      <span class="eyebrow">Playground</span>
+      <p>Start from a known font. Upload only when you need to.</p>
+    </div>
+    <a class="ghost-link" href="/">Back to homepage</a>
+  </header>
+
+  <main class="tool-layout">
+    <section class="control-column">
+      <section class="panel intro-panel">
+        <span class="eyebrow">Default path</span>
+        <h1>Start with a Google font, then stress it until the weak spots show.</h1>
+        <p>
+          The playground leads with a curated starter list. When you want a real TypeWeaver report,
+          the selected starter is synced into the existing registry and benchmarked with the same Rust pipeline.
+        </p>
+      </section>
+
+      <section class="panel" id="starter-panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Step 1</span>
+            <h2>Choose a starter font</h2>
+            <p>These starters load from Google Fonts for instant preview and sync into TypeWeaver on demand.</p>
+          </div>
+        </div>
+        <div class="starter-grid" id="starterGrid"></div>
+      </section>
+
+      <section class="panel" id="upload">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Secondary path</span>
+            <h2>Upload your own font</h2>
+            <p>Still supported, just no longer the first interaction. Add a declared license if you know it.</p>
+          </div>
+        </div>
+        <label class="upload-drop">
+          <input type="file" id="fileInput" accept=".ttf,.otf,.woff,.woff2">
+          <span class="upload-title" id="uploadTitle">Choose a local font file</span>
+          <span class="upload-subtitle">TypeWeaver can preview the file immediately, then upload it into the registry when you are ready.</span>
+        </label>
+        <div class="upload-controls">
+          <label>
+            Declared license
+            <select id="licenseSelect">
+              <option value="unknown">Unknown or no sidecar</option>
+              <option value="MIT License">MIT</option>
+              <option value="Apache License Version 2.0">Apache-2.0</option>
+              <option value="CC0">CC0</option>
+              <option value="Public Domain">Public Domain</option>
+            </select>
+          </label>
+          <button class="secondary-button" id="uploadBtn" disabled>Upload to registry</button>
+        </div>
+        <div class="inline-note" id="uploadMsg">No local font selected yet.</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Step 2</span>
+            <h2>Choose the phrase</h2>
+            <p>Pick a ready-made phrase or rewrite it. The stress view updates immediately.</p>
+          </div>
+        </div>
+        <div class="phrase-grid" id="phraseGrid"></div>
+        <label class="textarea-wrap">
+          <span>Editable specimen</span>
+          <textarea id="phraseInput" rows="4"></textarea>
+        </label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Step 3</span>
+            <h2>Pick the scenario</h2>
+            <p>The benchmark profiles stay explicit: choose the exact environment you care about.</p>
+          </div>
+        </div>
+        <div class="option-grid" id="scenarioGrid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Step 4</span>
+            <h2>Add degradation</h2>
+            <p>Preset the ugly states: density, contrast loss, blur, and compression pressure.</p>
+          </div>
+        </div>
+        <div class="option-grid" id="presetGrid"></div>
+        <div class="action-row">
+          <button class="primary-button" id="runPreviewBtn">Run playground</button>
+          <button class="secondary-button" id="generateReportBtn">Generate JSON report</button>
+        </div>
+        <div class="inline-note strong" id="runStatus">Ready. Select a starter and run the playground.</div>
+      </section>
+    </section>
+
+    <section class="stage-column">
+      <section class="panel stage-panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Live stage</span>
+            <h2>Reference versus stressed view</h2>
+            <p>The right column behaves like a playground first, not a configuration form.</p>
+          </div>
+        </div>
+
+        <div class="session-strip" id="sessionSummary"></div>
+
+        <div class="preview-grid">
+          <article class="preview-card reference" id="referenceCard">
+            <div class="preview-meta">
+              <span class="preview-chip">Reference</span>
+              <span id="referenceMeta">Baseline</span>
+            </div>
+            <div class="preview-surface" id="referenceSurface">
+              <p class="preview-display" id="referenceDisplay">Pick a font. Break it on purpose. See if it survives.</p>
+              <p class="preview-body" id="referenceBody"></p>
+              <p class="preview-detail" id="referenceDetail"></p>
+            </div>
+          </article>
+
+          <article class="preview-card stressed" id="stressedCard">
+            <div class="preview-meta">
+              <span class="preview-chip warm">Stressed</span>
+              <span id="stressedMeta">Degraded</span>
+            </div>
+            <div class="preview-surface" id="stressedSurface">
+              <p class="preview-display" id="stressedDisplay">Pick a font. Break it on purpose. See if it survives.</p>
+              <p class="preview-body" id="stressedBody"></p>
+              <p class="preview-detail" id="stressedDetail"></p>
+            </div>
+          </article>
+        </div>
+
+        <div class="matrix-grid" id="matrixGrid"></div>
+      </section>
+
+      <section class="panel report-panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Registry + report</span>
+            <h2>Bench-ready library</h2>
+            <p>Use existing registry entries or sync the current starter before generating a report.</p>
+          </div>
+          <button class="secondary-button" id="refreshRegistryBtn">Refresh library</button>
+        </div>
+
+        <div class="registry-list" id="registryList">
+          <div class="empty-state">Loading registry...</div>
+        </div>
+
+        <div class="empty-state" id="reportEmpty">
+          Generate a report to see the benchmark metrics and JSON output here.
+        </div>
+
+        <div class="report-view" id="reportView" hidden>
+          <div class="metrics-grid" id="metricGrid"></div>
+          <div class="story-card" id="reportStory"></div>
+          <pre class="json-box" id="reportJson"></pre>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+</body>
+</html>
