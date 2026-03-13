@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TypeWeaver | Break Typography On Purpose</title>
+<title>TypeWeaver | Typography Stress Tests</title>
 <meta
   name="description"
-  content="TypeWeaver is a typography robustness lab for testing fonts in the conditions that usually expose weak type too late."
+  content="TypeWeaver makes weak typography obvious fast: pick a font, compare fixed phrases across visible stress states, then generate a JSON benchmark report."
 >
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,8 +24,9 @@
       <span>TypeWeaver</span>
     </a>
     <nav class="topnav">
-      <a href="#proof">Why This Fails</a>
-      <a href="#how">How It Works</a>
+      <a href="#why">Why</a>
+      <a href="#how">How</a>
+      <a href="#profiles">Profiles</a>
       <a class="button ghost" href="/tool">Open Tool</a>
     </nav>
   </header>
@@ -34,172 +35,145 @@
     <section class="hero">
       <div class="hero-copy">
         <span class="eyebrow">Typography robustness lab</span>
-        <h1>Pick a font. Break it on purpose. See if it survives.</h1>
+        <h1>Pick a font. See it under pressure immediately.</h1>
         <p class="hero-lede">
-          Teams usually approve type in perfect mockups, then discover the real problems after launch:
-          dark mode, tighter widths, lower contrast, worse screens, and confusion pairs that blur into each other.
-          TypeWeaver is built to make those failures obvious sooner.
+          TypeWeaver opens with four built-in phrases and the main stress states already visible.
+          Start with a known font, compare it fast, then generate the JSON benchmark when it earns the pick.
         </p>
         <div class="hero-actions">
-          <a class="button" href="/tool">Start In The Playground</a>
-          <a class="text-link" href="#proof">See the failure pattern</a>
+          <a class="button" href="/tool">Open The Tool</a>
+          <a class="text-link" href="#how">See the loop</a>
         </div>
-        <div class="hero-points">
-          <div class="hero-point">
-            <strong>Start from a known font</strong>
-            <span>Use a curated Google Fonts path before you upload anything custom.</span>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <strong>4</strong>
+            <span>built-in phrases, always visible</span>
           </div>
-          <div class="hero-point">
-            <strong>Apply stress fast</strong>
-            <span>Switch scenarios, phrases, and degradation presets without rebuilding the whole flow.</span>
+          <div class="stat-card">
+            <strong>4</strong>
+            <span>stress states on screen by default</span>
           </div>
-          <div class="hero-point">
-            <strong>Export a report card</strong>
-            <span>Sync the font into TypeWeaver and generate a JSON result when you need a real benchmark artifact.</span>
+          <div class="stat-card">
+            <strong>2</strong>
+            <span>benchmark profiles ready for JSON output</span>
           </div>
         </div>
       </div>
 
       <div class="hero-stage card">
         <div class="stage-topline">
-          <span class="stage-chip">Baseline approval</span>
-          <span class="stage-chip warm">Reality check</span>
+          <span class="stage-chip">Reference</span>
+          <span class="stage-chip">Contrast drop</span>
+          <span class="stage-chip">Compression</span>
+          <span class="stage-chip warm">Mobile dark</span>
         </div>
 
-        <div class="stage-frames">
-          <article class="stage-frame safe">
-            <span class="frame-label">What gets approved</span>
-            <h2>Headline looks sharp.</h2>
-            <p>Balanced spacing. Clean screenshot. Everyone says yes.</p>
+        <div class="stage-grid">
+          <article class="stage-card reference">
+            <span class="frame-label">Reference</span>
+            <h2>Order 1001 ships to 10 I/O labs.</h2>
+            <p>Clean light-mode approval state.</p>
           </article>
 
-          <article class="stage-frame stress">
-            <span class="frame-label">Where it breaks</span>
+          <article class="stage-card contrast">
+            <span class="frame-label">Contrast drop</span>
             <h2>O0 I/l/1 S5 B8</h2>
-            <p>Contrast slips, numerals collide, and dense UI text starts feeling unreliable.</p>
+            <p>Edges fade and weak structure shows.</p>
           </article>
-        </div>
 
-        <div class="stress-strip">
-          <div class="stress-card">
-            <span class="mini-kicker">Phrase</span>
-            <strong>Order 1001 ships to 10 I/O labs.</strong>
-          </div>
-          <div class="stress-card">
-            <span class="mini-kicker">Scenario</span>
-            <strong>Mobile dark, lower contrast, tighter text.</strong>
-          </div>
-          <div class="stress-card">
-            <span class="mini-kicker">Outcome</span>
-            <strong>Either the font holds its shape or it does not.</strong>
-          </div>
+          <article class="stage-card compression">
+            <span class="frame-label">Compression</span>
+            <h2>rn / m cl / d</h2>
+            <p>Tighter spacing exposes rhythm problems.</p>
+          </article>
+
+          <article class="stage-card night">
+            <span class="frame-label">Mobile dark</span>
+            <h2>Returns, refunds, and receipts.</h2>
+            <p>Small, dim, and less forgiving.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <section class="section" id="proof">
+    <section class="section" id="why">
       <div class="section-copy">
-        <span class="eyebrow">What people do today</span>
-        <h2>Most font choices are still made in presentation mode.</h2>
+        <span class="eyebrow">Why it exists</span>
+        <h2>Most fonts are still approved in the easiest state.</h2>
         <p>
-          A static specimen, a hero mock, and a clean desktop screenshot are enough to make a typeface feel convincing.
-          That is also exactly why weak fonts keep getting approved. The easy state hides the failure modes that show up in product use.
+          A clean mockup hides the problems. Real products add density, lower contrast,
+          darker surfaces, and confusion pairs. TypeWeaver keeps those failure modes visible from the start.
         </p>
       </div>
 
       <div class="proof-grid">
         <article class="proof-card cold">
-          <span class="card-kicker">Common workflow</span>
-          <h3>Looks good in the mock.</h3>
-          <p>
-            Review the nicest screen, check the headline, maybe glance at a paragraph, and move on.
-          </p>
-          <ul>
-            <li>Large text</li>
-            <li>Generous spacing</li>
-            <li>Bright high-contrast canvas</li>
-          </ul>
+          <span class="card-kicker">What gets approved</span>
+          <h3>Large, bright, generous.</h3>
+          <p>Headline first. Nice screenshot. Plenty of space.</p>
         </article>
 
         <article class="proof-card hot">
-          <span class="card-kicker">What actually ships</span>
-          <h3>Small, dim, compressed, and crowded.</h3>
-          <p>
-            The real product is where confusion pairs, thin joins, and dense rhythm problems start charging interest.
-          </p>
-          <ul>
-            <li>Mobile dark mode</li>
-            <li>Low-contrast chrome</li>
-            <li>UI labels, numerals, and mixed content</li>
-          </ul>
+          <span class="card-kicker">What users get</span>
+          <h3>Small, dim, crowded.</h3>
+          <p>Numbers, labels, and mixed content under pressure.</p>
         </article>
       </div>
     </section>
 
     <section class="section" id="how">
       <div class="section-copy">
-        <span class="eyebrow">How TypeWeaver works</span>
-        <h2>A simple loop built for rough conditions.</h2>
-        <p>
-          TypeWeaver is not trying to be a giant design suite on the homepage. The job is narrower:
-          make it easy to pick a plausible font, stress it quickly, and capture a benchmark result when needed.
-        </p>
+        <span class="eyebrow">How it works</span>
+        <h2>Keep the loop short.</h2>
       </div>
 
       <div class="steps-grid">
         <article class="step-card">
           <span class="step-number">01</span>
-          <h3>Choose a starter</h3>
-          <p>
-            Open the tool and begin with a curated Google Fonts option. You can get to a meaningful first run without hunting for files.
-          </p>
+          <h3>Pick a starter</h3>
+          <p>Use the default Google font or swap to another known starter.</p>
         </article>
         <article class="step-card">
           <span class="step-number">02</span>
-          <h3>Stress the specimen</h3>
-          <p>
-            Swap phrases, switch scenarios, and apply degradation presets that mimic the states where typography stops being flattering.
-          </p>
+          <h3>Read the board</h3>
+          <p>See the phrases and stress states together without opening menus.</p>
         </article>
         <article class="step-card">
           <span class="step-number">03</span>
-          <h3>Generate the report</h3>
-          <p>
-            When you want the artifact, TypeWeaver syncs the chosen starter or uploaded file into the existing Rust registry pipeline and emits the JSON report card.
-          </p>
+          <h3>Emit the report</h3>
+          <p>Sync the font into the Rust pipeline and generate JSON when needed.</p>
         </article>
       </div>
     </section>
 
-    <section class="section visual-band">
-      <article class="visual-card">
-        <span class="card-kicker">Confusion pairs</span>
-        <h3>See the tiny mistakes before users do.</h3>
-        <p>O/0, I/l/1, S/5, B/8, rn/m, and cl/d are the kinds of collisions that erode trust fast.</p>
-      </article>
-      <article class="visual-card">
-        <span class="card-kicker">Two profiles</span>
-        <h3>Use the exact benchmark contexts that exist today.</h3>
-        <p><code>web_light_default</code> and <code>mobile_dark_low_contrast</code> stay front and center instead of buried in tooling.</p>
-      </article>
-      <article class="visual-card">
-        <span class="card-kicker">Deployable output</span>
-        <h3>Keep the actual Rust service intact.</h3>
-        <p>The marketing page is separate. The tool stays routable, benchable, and ready to ship without a frontend rewrite.</p>
-      </article>
+    <section class="section" id="profiles">
+      <div class="profiles-grid">
+        <article class="profile-card">
+          <span class="card-kicker">Benchmark profile</span>
+          <h3><code>web_light_default</code></h3>
+          <p>Baseline web reading with strong light-surface contrast.</p>
+        </article>
+        <article class="profile-card">
+          <span class="card-kicker">Benchmark profile</span>
+          <h3><code>mobile_dark_low_contrast</code></h3>
+          <p>Darker UI, smaller text, and less room for weak shapes.</p>
+        </article>
+        <article class="profile-card">
+          <span class="card-kicker">Built-in check</span>
+          <h3>Confusion pairs stay visible.</h3>
+          <p>O/0, I/l/1, S/5, B/8, rn/m, and cl/d are always part of the pass.</p>
+        </article>
+      </div>
     </section>
 
     <section class="section">
       <div class="cta card">
         <div>
           <span class="eyebrow">Open the tool</span>
-          <h2>Start with a known Google font, then make it earn the pick.</h2>
-          <p>
-            The default path now begins with a curated starter list. Upload still exists, but it is no longer the first thing the homepage asks you to do.
-          </p>
+          <h2>Use the default font and start reading the stress board immediately.</h2>
         </div>
         <div class="cta-actions">
-          <a class="button" href="/tool">Open The Playground</a>
+          <a class="button" href="/tool">Open The Tool</a>
           <a class="button ghost" href="/tool#upload">Jump To Upload</a>
         </div>
       </div>
@@ -208,7 +182,7 @@
 
   <footer class="footer">
     <span>TypeWeaver</span>
-    <span>Benchmark typography where it usually starts to fail.</span>
+    <span>Benchmark typography where it actually starts to fail.</span>
   </footer>
 </div>
 </body>
