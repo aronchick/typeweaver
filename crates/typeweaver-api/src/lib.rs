@@ -1,9 +1,10 @@
 pub mod metrics;
+pub mod public_fonts;
 pub mod telemetry;
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use axum::Router;
 use axum::extract::{FromRequestParts, Multipart, Query, State};
@@ -23,16 +24,27 @@ use typeweaver_registry::{
 };
 
 use crate::metrics::Metrics;
+use crate::public_fonts::{
+    PublicFontCatalog, load_public_font_catalog, resolve_public_font, search_public_font_catalog,
+};
 
 #[derive(Embed)]
 #[folder = "static/"]
 struct StaticAssets;
+
+#[derive(Clone)]
+struct CachedPublicFontCatalog {
+    fetched_at: Instant,
+    catalog: PublicFontCatalog,
+}
 
 struct AppState {
     registry_root: PathBuf,
     metrics: Metrics,
     api_token: Option<String>,
     started_at: Instant,
+    http_client: reqwest::Client,
+    public_font_catalog: Option<CachedPublicFontCatalog>,
 }
 
 // ---------------------------------------------------------------------------
@@ -82,16 +94,25 @@ fn app(registry_root: PathBuf) -> Router {
     let api_token = std::env::var("TYPEWEAVER_API_TOKEN")
         .ok()
         .filter(|s| !s.is_empty());
+    let http_client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(6))
+        .user_agent(format!("TypeWeaver/{}", env!("CARGO_PKG_VERSION")))
+        .build()
+        .expect("public font http client");
     let state = Arc::new(Mutex::new(AppState {
         registry_root,
         metrics: Metrics::new(),
         api_token,
         started_at: Instant::now(),
+        http_client,
+        public_font_catalog: None,
     }));
 
     Router::new()
         .route("/api/fonts/ingest", post(handle_ingest))
         .route("/api/fonts/ingest-url", post(handle_ingest_url))
+        .route("/api/public-fonts", get(handle_public_font_search))
+        .route("/api/public-fonts/ingest", post(handle_public_font_ingest))
         .route("/api/fonts", get(handle_list))
         .route("/api/fonts/{id}", get(handle_get_font))
         .route("/api/fonts/{id}/file", get(handle_font_file))
@@ -231,6 +252,18 @@ async fn handle_ingest(
 #[derive(Deserialize)]
 struct IngestUrlRequest {
     url: String,
+    declared_license: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct PublicFontSearchQuery {
+    q: Option<String>,
+    limit: Option<usize>,
+}
+
+#[derive(Deserialize)]
+struct IngestPublicFontRequest {
+    family: String,
     declared_license: Option<String>,
 }
 
@@ -394,6 +427,164 @@ async fn handle_ingest_url(
     active_gauge.dec();
     duration_hist.observe(timer.elapsed().as_secs_f64());
     json_response(StatusCode::OK, &body)
+}
+
+async fn handle_public_font_search(
+    State(state): State<Arc<Mutex<AppState>>>,
+    _auth: ValidToken,
+    Query(query): Query<PublicFontSearchQuery>,
+) -> Response {
+    let timer = Instant::now();
+    let st = state.lock().await;
+    st.metrics.requests_total.inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["public_font_search"])
+        .inc();
+    st.metrics.active_requests.inc();
+    let duration_hist = st.metrics.request_duration.clone();
+    let active_gauge = st.metrics.active_requests.clone();
+    drop(st);
+
+    let catalog = cached_public_font_catalog(&state).await;
+    let payload =
+        search_public_font_catalog(&catalog, query.q.as_deref().unwrap_or(""), query.limit);
+    let response = json_serialized_response(StatusCode::OK, &payload);
+    active_gauge.dec();
+    duration_hist.observe(timer.elapsed().as_secs_f64());
+    response
+}
+
+async fn handle_public_font_ingest(
+    State(state): State<Arc<Mutex<AppState>>>,
+    _auth: ValidToken,
+    axum::Json(payload): axum::Json<IngestPublicFontRequest>,
+) -> Response {
+    let timer = Instant::now();
+    let trimmed_family = payload.family.trim().to_string();
+    if trimmed_family.is_empty() {
+        return error_response(StatusCode::BAD_REQUEST, "font family is required");
+    }
+
+    let st = state.lock().await;
+    let reg_root = st.registry_root.clone();
+    let client = st.http_client.clone();
+    let fonts_counter = st.metrics.fonts_ingested_total.clone();
+    let registry_gauge = st.metrics.registry_size.clone();
+    let upload_bytes = st.metrics.upload_bytes_total.clone();
+    st.metrics.requests_total.inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["public_font_ingest"])
+        .inc();
+    st.metrics.active_requests.inc();
+    let duration_hist = st.metrics.request_duration.clone();
+    let active_gauge = st.metrics.active_requests.clone();
+    drop(st);
+
+    let resolved = match resolve_public_font(
+        &client,
+        &trimmed_family,
+        payload.declared_license.as_deref(),
+    )
+    .await
+    {
+        Ok(resolved) => resolved,
+        Err(error) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::BAD_GATEWAY, &error);
+        }
+    };
+
+    let upload_dir = reg_root.join("uploads");
+    if let Err(e) = std::fs::create_dir_all(&upload_dir) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("failed to create upload dir: {e}"),
+        );
+    }
+
+    let font_path = upload_dir.join(&resolved.file_name);
+    if let Err(e) = std::fs::write(&font_path, &resolved.bytes) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("failed to write {}: {e}", resolved.file_name),
+        );
+    }
+
+    if let Some(license) = resolved.declared_license.as_deref() {
+        let sidecar_name = license_sidecar_name(&resolved.file_name);
+        let sidecar_path = upload_dir.join(sidecar_name);
+        if let Err(e) = std::fs::write(&sidecar_path, license) {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &format!("failed to write license file: {e}"),
+            );
+        }
+    }
+
+    upload_bytes.inc_by(resolved.bytes.len() as u64);
+
+    let registry = match ingest_dir(&upload_dir) {
+        Ok(registry) => registry,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &format!("ingest failed: {e}"),
+            );
+        }
+    };
+
+    let reg_dir = registry_dir(&reg_root);
+    if let Err(e) = save_registry_at(&reg_dir, &registry) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("save failed: {e}"),
+        );
+    }
+
+    let asset = match registry
+        .assets
+        .iter()
+        .find(|asset| asset.file_name == resolved.file_name)
+    {
+        Some(asset) => asset,
+        None => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "public font saved, but the registry entry was not found",
+            );
+        }
+    };
+
+    fonts_counter.inc();
+    registry_gauge.set(registry.assets.len() as i64);
+
+    let body = serde_json::json!({
+        "family": resolved.family,
+        "file_name": asset.file_name,
+        "asset_id": asset.id,
+        "status": asset.status.as_str(),
+        "license_normalized": asset.license_normalized.as_str(),
+        "source": resolved.source,
+    });
+    let response = json_serialized_response(StatusCode::OK, &body);
+    active_gauge.dec();
+    duration_hist.observe(timer.elapsed().as_secs_f64());
+    response
 }
 
 async fn handle_list(State(state): State<Arc<Mutex<AppState>>>, _auth: ValidToken) -> Response {
@@ -735,12 +926,51 @@ fn resolve_static_path(request_path: &str) -> Option<String> {
     None
 }
 
+async fn cached_public_font_catalog(state: &Arc<Mutex<AppState>>) -> PublicFontCatalog {
+    const FRESH_TTL: Duration = Duration::from_secs(30 * 60);
+    const DEGRADED_TTL: Duration = Duration::from_secs(5 * 60);
+
+    let (client, cached) = {
+        let st = state.lock().await;
+        (st.http_client.clone(), st.public_font_catalog.clone())
+    };
+
+    if let Some(cached) = cached {
+        let ttl = if cached.catalog.degraded {
+            DEGRADED_TTL
+        } else {
+            FRESH_TTL
+        };
+        if cached.fetched_at.elapsed() < ttl {
+            return cached.catalog;
+        }
+    }
+
+    let catalog = load_public_font_catalog(&client).await;
+    let mut st = state.lock().await;
+    st.public_font_catalog = Some(CachedPublicFontCatalog {
+        fetched_at: Instant::now(),
+        catalog: catalog.clone(),
+    });
+    catalog
+}
+
 fn json_response(status: StatusCode, body: &str) -> Response {
     let mut resp = Response::new(axum::body::Body::from(body.to_string()));
     *resp.status_mut() = status;
     resp.headers_mut()
         .insert("content-type", HeaderValue::from_static("application/json"));
     resp
+}
+
+fn json_serialized_response<T: serde::Serialize>(status: StatusCode, body: &T) -> Response {
+    match serde_json::to_string(body) {
+        Ok(json) => json_response(status, &json),
+        Err(error) => error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("json encode error: {error}"),
+        ),
+    }
 }
 
 fn error_response(status: StatusCode, message: &str) -> Response {

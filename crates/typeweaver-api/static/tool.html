@@ -468,6 +468,52 @@
     font-size: 13px;
   }
 
+  .public-font-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 12px;
+  }
+
+  .public-font-search {
+    flex: 1 1 320px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .public-font-search span {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .public-font-search input {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(20,26,30,0.14);
+    background: rgba(255,255,255,0.94);
+    color: var(--ink);
+    font: inherit;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.76);
+  }
+
+  .public-font-search input:focus {
+    outline: 2px solid rgba(255,107,61,0.22);
+    border-color: rgba(255,107,61,0.34);
+  }
+
+  .public-font-list {
+    max-height: 540px;
+  }
+
+  .public-font-card p {
+    margin: 0;
+  }
+
   .scenario-grid,
   .metric-grid,
   .font-list,
@@ -869,41 +915,29 @@
         <div class="panel-head">
           <div>
             <span class="section-kicker">Start here</span>
-            <h2>Google Fonts starter set</h2>
+            <h2>Drop in a public font</h2>
             <p>
-              This should become the default onboarding path. For now, use these as the starter comparison set and use custom upload below when you need your own files.
+              Search a public catalog, click once, and TypeWeaver adds the font to your library immediately. If the live catalog is down, the tool falls back to a built-in set.
             </p>
           </div>
         </div>
 
-        <div class="scenario-grid">
-          <article class="scenario-card selected">
-            <strong>Inter</strong>
-            <p>Strong default for product UI and operational interfaces.</p>
-            <div class="tag-row"><span class="tag">sans</span><span class="tag">UI</span><span class="tag">starter</span></div>
-          </article>
-          <article class="scenario-card">
-            <strong>IBM Plex Sans</strong>
-            <p>Useful comparison when you want more character without sacrificing structure.</p>
-            <div class="tag-row"><span class="tag">sans</span><span class="tag">system-ish</span><span class="tag">starter</span></div>
-          </article>
-          <article class="scenario-card">
-            <strong>Source Serif 4</strong>
-            <p>Starter serif option for seeing how personality behaves under pressure.</p>
-            <div class="tag-row"><span class="tag">serif</span><span class="tag">editorial</span><span class="tag">starter</span></div>
-          </article>
-          <article class="scenario-card">
-            <strong>Roboto Mono</strong>
-            <p>Useful for code-like, tabular, or high-distinction comparison cases.</p>
-            <div class="tag-row"><span class="tag">mono</span><span class="tag">distinction</span><span class="tag">starter</span></div>
-          </article>
-          <article class="scenario-card">
-            <strong>Archivo</strong>
-            <p>Condensed, assertive, and useful when labels need to stay readable in tighter spaces.</p>
-            <div class="tag-row"><span class="tag">sans</span><span class="tag">compact</span><span class="tag">starter</span></div>
-          </article>
+        <div class="public-font-toolbar">
+          <label class="public-font-search" for="publicFontSearchInput">
+            <span>Search public fonts</span>
+            <input
+              type="search"
+              id="publicFontSearchInput"
+              placeholder="Roboto, Inter, IBM Plex Sans, Source Serif 4"
+              autocomplete="off"
+            >
+          </label>
+          <button class="secondary" id="clearPublicFontSearchBtn" type="button">Clear</button>
         </div>
-        <div class="upload-msg">Next implementation step: one-click ingest from Google Fonts into the same local library used by uploads.</div>
+        <div class="upload-msg" id="publicFontMsg">Loading the public font catalog...</div>
+        <div class="font-list public-font-list" id="publicFontResults">
+          <div class="empty-state">Loading public fonts...</div>
+        </div>
       </section>
 
       <section class="card panel">
@@ -1151,6 +1185,10 @@ const dropTitle = document.getElementById("dropTitle");
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const uploadMsg = document.getElementById("uploadMsg");
+const publicFontSearchInput = document.getElementById("publicFontSearchInput");
+const clearPublicFontSearchBtn = document.getElementById("clearPublicFontSearchBtn");
+const publicFontMsg = document.getElementById("publicFontMsg");
+const publicFontResults = document.getElementById("publicFontResults");
 const registryList = document.getElementById("registryList");
 const selectionSummary = document.getElementById("selectionSummary");
 const selectedScenarioCopy = document.getElementById("selectedScenarioCopy");
@@ -1174,11 +1212,23 @@ let currentFont = null;
 let compareFont = null;
 let currentScenario = "web_light_default";
 let latestRegistry = [];
+let latestPublicFonts = [];
+let publicFontSearchTimer = null;
+let publicFontSearchRequestId = 0;
 
 function formatBytes(bytes) {
   if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + " MB";
   if (bytes >= 1024) return (bytes / 1024).toFixed(1) + " KB";
   return bytes + " B";
+}
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 function titleCaseStatus(status) {
@@ -1222,6 +1272,127 @@ function updateButtons() {
     <span class="summary-chip primary-chip">Primary: ${currentFont ? (currentFont.family_name || currentFont.file_name) : "none"}</span>
     <span class="summary-chip compare-chip">Comparison: ${compareFont ? (compareFont.family_name || compareFont.file_name) : "none"}</span>
   `;
+}
+
+function renderPublicFontResults(fonts) {
+  latestPublicFonts = fonts;
+  if (!fonts.length) {
+    publicFontResults.innerHTML = `<div class="empty-state">No public fonts matched that search.</div>`;
+    return;
+  }
+
+  publicFontResults.innerHTML = fonts.map((font, index) => `
+    <article class="font-card public-font-card">
+      <div class="font-head">
+        <div>
+          <strong>${escapeHtml(font.family)}</strong>
+          <small>${escapeHtml(font.source === "fallback_catalog" ? "Built-in public catalog" : "Google Fonts catalog")}</small>
+        </div>
+        <span class="status ${font.declared_license ? "status-approved" : "status-quarantined"}">${escapeHtml(font.category)}</span>
+      </div>
+      <p>${escapeHtml(
+        font.declared_license
+          ? "Known license metadata will be recorded automatically."
+          : "Loads immediately, but the saved license stays unknown unless TypeWeaver has a built-in match."
+      )}</p>
+      <div class="font-meta" style="margin:12px 0 14px;">
+        <span class="tag">${escapeHtml(font.category)}</span>
+        <span class="tag">${escapeHtml(font.license_hint)}</span>
+        <span class="tag">${escapeHtml(font.source === "fallback_catalog" ? "fallback" : "live catalog")}</span>
+      </div>
+      <div class="action-row">
+        <button class="primary use-public-font-btn" type="button" data-public-font-index="${index}">Use this font</button>
+        <span class="muted">Adds it to the library and sets it as primary.</span>
+      </div>
+    </article>
+  `).join("");
+
+  publicFontResults.querySelectorAll(".use-public-font-btn").forEach(button => {
+    button.addEventListener("click", async () => {
+      const index = Number(button.dataset.publicFontIndex);
+      const font = latestPublicFonts[index];
+      if (!font) return;
+
+      const originalLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "Adding...";
+      publicFontMsg.textContent = `Adding ${font.family} to your library...`;
+
+      try {
+        const response = await fetch("/api/public-fonts/ingest", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            family: font.family,
+            declared_license: font.declared_license
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Public font ingest failed");
+        }
+
+        await loadRegistry();
+        const asset =
+          latestRegistry.find(candidate => candidate.id === payload.asset_id) ||
+          latestRegistry.find(candidate => candidate.file_name === payload.file_name) ||
+          latestRegistry.find(candidate => (candidate.family_name || "").toLowerCase() === font.family.toLowerCase());
+        if (!asset) {
+          throw new Error("The font loaded, but it was not found in the library");
+        }
+
+        setPrimaryFont(asset);
+        publicFontMsg.textContent =
+          `Added ${asset.family_name || asset.file_name}. It is now the primary font for reports and comparisons.`;
+      } catch (error) {
+        publicFontMsg.textContent = `Could not add ${font.family}: ${error.message}`;
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
+    });
+  });
+}
+
+async function searchPublicFonts(query = "") {
+  const requestId = ++publicFontSearchRequestId;
+  const trimmedQuery = query.trim();
+  publicFontMsg.textContent = trimmedQuery
+    ? `Searching public fonts for "${trimmedQuery}"...`
+    : "Loading public fonts...";
+
+  const params = new URLSearchParams();
+  if (trimmedQuery) params.set("q", trimmedQuery);
+  params.set("limit", trimmedQuery ? "10" : "12");
+
+  try {
+    const response = await fetch(`/api/public-fonts?${params.toString()}`);
+    const payload = await response.json();
+    if (requestId !== publicFontSearchRequestId) return;
+    if (!response.ok) {
+      throw new Error(payload.error || "Public font search failed");
+    }
+
+    const fonts = Array.isArray(payload.fonts) ? payload.fonts : [];
+    renderPublicFontResults(fonts);
+
+    if (payload.degraded) {
+      publicFontMsg.textContent =
+        payload.note || "Live catalog lookup is unavailable. Showing the built-in public catalog instead.";
+    } else if (trimmedQuery) {
+      publicFontMsg.textContent =
+        fonts.length === 0
+          ? `No public fonts matched "${trimmedQuery}".`
+          : `Found ${fonts.length} public font${fonts.length === 1 ? "" : "s"} for "${trimmedQuery}".`;
+    } else {
+      publicFontMsg.textContent = "Popular public fonts are ready. Pick one to add it to your library immediately.";
+    }
+  } catch (error) {
+    if (requestId !== publicFontSearchRequestId) return;
+    latestPublicFonts = [];
+    publicFontResults.innerHTML = `<div class="empty-state">Could not search public fonts right now. Uploading still works below.</div>`;
+    publicFontMsg.textContent = `Public font search is unavailable: ${error.message}`;
+  }
 }
 
 function renderScenarios() {
@@ -1559,7 +1730,27 @@ clearCompareBtn.addEventListener("click", () => {
   compareEmpty.style.display = "block";
 });
 
+publicFontSearchInput.addEventListener("input", () => {
+  const query = publicFontSearchInput.value;
+  clearPublicFontSearchBtn.disabled = query.trim().length === 0;
+  if (publicFontSearchTimer) {
+    window.clearTimeout(publicFontSearchTimer);
+  }
+  publicFontSearchTimer = window.setTimeout(() => {
+    searchPublicFonts(query);
+  }, 140);
+});
+
+clearPublicFontSearchBtn.addEventListener("click", () => {
+  publicFontSearchInput.value = "";
+  clearPublicFontSearchBtn.disabled = true;
+  searchPublicFonts("");
+  publicFontSearchInput.focus();
+});
+
+clearPublicFontSearchBtn.disabled = true;
 renderScenarios();
+searchPublicFonts();
 loadRegistry();
 updateButtons();
 </script>
