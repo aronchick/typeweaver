@@ -721,6 +721,11 @@ fn resolve_static_path(request_path: &str) -> Option<String> {
     }
 
     if !path.contains('.') {
+        let html = format!("{path}.html");
+        if StaticAssets::get(&html).is_some() {
+            return Some(html);
+        }
+
         let nested = format!("{path}/index.html");
         if StaticAssets::get(&nested).is_some() {
             return Some(nested);
@@ -889,16 +894,10 @@ mod tests {
     }
 
     #[test]
-    fn resolves_root_and_nested_static_routes() {
+    fn resolves_root_and_prefers_html_over_nested_index_routes() {
         assert_eq!(resolve_static_path("/"), Some("index.html".to_string()));
-        assert_eq!(
-            resolve_static_path("/tool"),
-            Some("tool/index.html".to_string())
-        );
-        assert_eq!(
-            resolve_static_path("/tool/"),
-            Some("tool/index.html".to_string())
-        );
+        assert_eq!(resolve_static_path("/tool"), Some("tool.html".to_string()));
+        assert_eq!(resolve_static_path("/tool/"), Some("tool.html".to_string()));
     }
 
     #[test]

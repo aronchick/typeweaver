@@ -1,48 +1,72 @@
 #!/usr/bin/env bash
-# Deploy TypeWeaver to Hetzner (136.243.132.145)
-# Run from repo root on the DO droplet.
+# Deploy TypeWeaver to the configured remote host.
+# Run from repo root with DEPLOY_HOST and DEPLOY_USER set.
+# The GitHub Actions workflow is the canonical deploy path; this script is the manual fallback.
 set -euo pipefail
 
-HETZNER=136.243.132.145
-REMOTE_USER=root
-REMOTE_DIR=/opt/typeweaver
-SERVICE=typeweaver
+DEPLOY_HOST=${DEPLOY_HOST:-}
+DEPLOY_USER=${DEPLOY_USER:-root}
+REMOTE_DIR=${REMOTE_DIR:-/opt/typeweaver}
+SERVICE=${SERVICE:-typeweaver}
+SSH_OPTS=${SSH_OPTS:-}
 
-echo "==> Building release binary (no OCR feature for now)"
+if [ -z "$DEPLOY_HOST" ]; then
+  cat >&2 <<'EOF'
+DEPLOY_HOST is required.
+
+Why: the old hardcoded public Hetzner IP drifted from the real deploy target.
+GitHub Actions deploys successfully using repo secrets (often via Tailscale/private routing),
+so this manual script must be told the current host explicitly.
+
+Example:
+  DEPLOY_HOST=100.x.y.z DEPLOY_USER=root ./deploy/deploy.sh
+EOF
+  exit 1
+fi
+
+echo "==> Building release binary"
 cargo build --release -p typeweaver-cli
 
-echo "==> Syncing binary to Hetzner"
-ssh "${REMOTE_USER}@${HETZNER}" "mkdir -p ${REMOTE_DIR}"
+echo "==> Checking SSH reachability for ${DEPLOY_USER}@${DEPLOY_HOST}:22"
+python3 -c 'import socket, sys; host = sys.argv[1]; s = socket.create_connection((host, 22), timeout=10); s.close(); print(f"SSH reachable on {host}:22")' "$DEPLOY_HOST"
+
+echo "==> Syncing binary"
+ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p ${REMOTE_DIR}"
 rsync -avz --progress \
+  -e "ssh $SSH_OPTS" \
   target/release/typeweaver-cli \
-  "${REMOTE_USER}@${HETZNER}:${REMOTE_DIR}/typeweaver"
+  "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/typeweaver"
 
 echo "==> Installing systemd service"
-scp deploy/typeweaver.service \
-  "${REMOTE_USER}@${HETZNER}:/etc/systemd/system/${SERVICE}.service"
+rsync -avz \
+  -e "ssh $SSH_OPTS" \
+  deploy/typeweaver.service \
+  "${DEPLOY_USER}@${DEPLOY_HOST}:~/typeweaver.service"
+ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "install -m 0644 ~/typeweaver.service /etc/systemd/system/${SERVICE}.service && rm -f ~/typeweaver.service"
 
 echo "==> Installing Caddy config"
-scp deploy/caddy-typeweaver.caddy \
-  "${REMOTE_USER}@${HETZNER}:/etc/caddy/sites/${SERVICE}.caddy"
+rsync -avz \
+  -e "ssh $SSH_OPTS" \
+  deploy/caddy-typeweaver.caddy \
+  "${DEPLOY_USER}@${DEPLOY_HOST}:~/typeweaver.caddy"
+ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" "mkdir -p /etc/caddy/sites && install -m 0644 ~/typeweaver.caddy /etc/caddy/sites/${SERVICE}.caddy && rm -f ~/typeweaver.caddy"
 
-echo "==> Reloading services on Hetzner"
-ssh "${REMOTE_USER}@${HETZNER}" bash -euo pipefail << 'REMOTE'
+echo "==> Reloading services"
+ssh $SSH_OPTS "${DEPLOY_USER}@${DEPLOY_HOST}" bash -euo pipefail <<REMOTE
   useradd --system --shell /usr/sbin/nologin typeweaver 2>/dev/null || true
-  mkdir -p /opt/typeweaver/.typeweaver
-  chown -R typeweaver:typeweaver /opt/typeweaver
-  chmod +x /opt/typeweaver/typeweaver
+  mkdir -p ${REMOTE_DIR}/.typeweaver
+  chown -R typeweaver:typeweaver ${REMOTE_DIR}
+  chmod +x ${REMOTE_DIR}/typeweaver
   systemctl daemon-reload
-  systemctl enable typeweaver
-  systemctl restart typeweaver
-  caddy validate --config /etc/caddy/Caddyfile 2>/dev/null && caddy reload --config /etc/caddy/Caddyfile || true
+  systemctl enable ${SERVICE}
+  systemctl restart ${SERVICE}
+  caddy validate --config /etc/caddy/Caddyfile
+  systemctl reload caddy
+  sleep 3
+  curl -sf --max-time 10 http://127.0.0.1:3500/okz && echo ' /okz OK'
+  curl -sf --max-time 10 http://127.0.0.1:3500/healthz && echo ' /healthz OK'
+  curl -sf --max-time 10 http://127.0.0.1:3500/varz | head -5 && echo ' /varz OK'
 REMOTE
 
-echo "==> Verifying deployment"
-sleep 3
-curl -sf "http://${HETZNER}:3500/okz" && echo " /okz OK"
-curl -sf "http://${HETZNER}:3500/healthz" && echo " /healthz OK"
-curl -sf "http://${HETZNER}:3500/varz" | head -5 && echo " /varz OK"
-
 echo ""
-echo "Deployed to typeweaver.org (${HETZNER}:3500)"
-echo "Point typeweaver.org DNS A record → ${HETZNER} in Cloudflare if not already done."
+echo "Deployed to typeweaver.org via ${DEPLOY_USER}@${DEPLOY_HOST}"
