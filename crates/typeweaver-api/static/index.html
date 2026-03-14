@@ -1,200 +1,385 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TypeWeaver | Typography Stress Tests</title>
-<meta
-  name="description"
-  content="TypeWeaver makes typography failure visible fast with side-by-side stress proofs for tiny text, low contrast, blur, confusable glyphs, density, and dark mode."
->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
-  rel="stylesheet"
->
-<link rel="stylesheet" href="/home.css">
-</head>
-<body>
-<div class="page-shell">
-  <header class="topbar">
-    <a class="brand" href="/">
-      <span class="brand-mark">Tw</span>
-      <span>TypeWeaver</span>
-    </a>
-    <a class="button" href="/tool">Open Stress Lab</a>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypeWeaver | Typography Stress Tests</title>
+    <meta
+      name="description"
+      content="TypeWeaver makes typography failure visible fast with side-by-side stress proofs for tiny text, low contrast, blur, confusable glyphs, density, and dark mode."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/home.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark">Tw</span>
+          <span>TypeWeaver</span>
+        </a>
+        <a class="button" href="/tool">Open Stress Lab</a>
+      </header>
 
-  <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <span class="eyebrow">Evidence-first type checks</span>
-        <h1>See the font fail before you ship it.</h1>
-        <div class="hero-actions">
-          <a class="button" href="/tool">Open /tool</a>
-          <a class="ghost-button" href="#proof">See Proof</a>
-        </div>
-        <div class="signal-row">
-          <span>Tiny</span>
-          <span>Low contrast</span>
-          <span>Blur</span>
-          <span>Dense UI</span>
-          <span>Dark mode</span>
-          <span>O0 I l 1 rn m</span>
-        </div>
-      </div>
-
-      <div class="hero-board">
-        <article class="proof-lane">
-          <div class="proof-side proof-clear">
-            <span class="lane-label">Clear</span>
-            <div class="mini-ui">
-              <div class="mini-ui-row">
-                <span>Order 1001</span>
-                <strong>8:15 PM</strong>
-              </div>
-              <div class="mini-ui-row">
-                <span>O0 passcode</span>
-                <strong>I l 1</strong>
-              </div>
-              <div class="mini-ui-row">
-                <span>10 I/O labs</span>
-                <strong>Ready</strong>
-              </div>
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <span class="eyebrow">Evidence-first type checks</span>
+            <h1>See the font fail before you ship it.</h1>
+            <div class="hero-actions">
+              <a class="button" href="/tool">Open /tool</a>
+              <a class="ghost-button" href="#proof">See Proof</a>
+            </div>
+            <div class="signal-row">
+              <span>Tiny</span>
+              <span>Low contrast</span>
+              <span>Blur</span>
+              <span>Dense UI</span>
+              <span>Palette stress</span>
+              <span>O0 I l 1 rn m</span>
             </div>
           </div>
 
-          <div class="proof-side proof-stress proof-tiny">
-            <span class="lane-label">11px</span>
-            <div class="mini-ui is-tight">
-              <div class="mini-ui-row">
-                <span>Order 1001</span>
-                <strong>8:15 PM</strong>
+          <div class="hero-board">
+            <article class="proof-lane">
+              <div class="proof-side proof-clear">
+                <span class="lane-label">Clear</span>
+                <div class="mini-ui">
+                  <div class="mini-ui-row">
+                    <span>Order 1001</span>
+                    <strong>8:15 PM</strong>
+                  </div>
+                  <div class="mini-ui-row">
+                    <span>O0 passcode</span>
+                    <strong>I l 1</strong>
+                  </div>
+                  <div class="mini-ui-row">
+                    <span>10 I/O labs</span>
+                    <strong>Ready</strong>
+                  </div>
+                </div>
               </div>
-              <div class="mini-ui-row">
-                <span>O0 passcode</span>
-                <strong>I l 1</strong>
+
+              <div class="proof-side proof-stress proof-tiny">
+                <span class="lane-label">11px</span>
+                <div class="mini-ui is-tight">
+                  <div class="mini-ui-row">
+                    <span>Order 1001</span>
+                    <strong>8:15 PM</strong>
+                  </div>
+                  <div class="mini-ui-row">
+                    <span>O0 passcode</span>
+                    <strong>I l 1</strong>
+                  </div>
+                  <div class="mini-ui-row">
+                    <span>10 I/O labs</span>
+                    <strong>Ready</strong>
+                  </div>
+                </div>
               </div>
-              <div class="mini-ui-row">
-                <span>10 I/O labs</span>
-                <strong>Ready</strong>
+            </article>
+
+            <article class="proof-lane">
+              <div class="proof-side proof-clear">
+                <span class="lane-label">Spaced</span>
+                <p class="proof-phrase">
+                  I l 1 | O 0 | rn m | cl d | S 5 | B 8
+                </p>
+              </div>
+
+              <div class="proof-side proof-stress proof-confusable">
+                <span class="lane-label">Squeezed</span>
+                <p class="proof-phrase is-squeezed">Il1 O0 rnm cld S5 B8</p>
+              </div>
+            </article>
+
+            <article class="proof-lane">
+              <div class="proof-side proof-clear">
+                <span class="lane-label">Light</span>
+                <div class="mobile-stack">
+                  <div class="mobile-card">
+                    <strong>Returns</strong>
+                    <span>Refunds, receipts, approvals.</span>
+                  </div>
+                  <div class="mobile-card">
+                    <strong>Gate C12</strong>
+                    <span>Boarding at 10:31 PM.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="proof-side proof-dark">
+                <span class="lane-label">Dim dark</span>
+                <div class="mobile-stack is-dark">
+                  <div class="mobile-card">
+                    <strong>Returns</strong>
+                    <span>Refunds, receipts, approvals.</span>
+                  </div>
+                  <div class="mobile-card">
+                    <strong>Gate C12</strong>
+                    <span>Boarding at 10:31 PM.</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="proof-grid" id="proof">
+          <article class="proof-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Low contrast</span>
+              <span class="micro-label">1001 / 10 I/O labs</span>
+            </div>
+            <p class="card-sample card-sample-clear">
+              Order 1001 ships to 10 I/O labs.
+            </p>
+            <p class="card-sample card-sample-fade">
+              Order 1001 ships to 10 I/O labs.
+            </p>
+          </article>
+
+          <article class="proof-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Blur</span>
+              <span class="micro-label">Refunds / receipts</span>
+            </div>
+            <p class="card-sample card-sample-clear">
+              Returns, refunds, receipts.
+            </p>
+            <p class="card-sample card-sample-blur">
+              Returns, refunds, receipts.
+            </p>
+          </article>
+
+          <article class="proof-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Dense UI</span>
+              <span class="micro-label">Crowded list</span>
+            </div>
+            <div class="dense-board">
+              <div class="dense-row">
+                <span>Queue</span>
+                <span>12</span>
+                <span>10:31 PM</span>
+              </div>
+              <div class="dense-row">
+                <span>Invoice 105</span>
+                <span>O0</span>
+                <span>Ready</span>
+              </div>
+              <div class="dense-row is-crowded">
+                <span
+                  >Invoice 105 / Queue 12 / Gate C12 / O0 / rn m / 10:31
+                  PM</span
+                >
               </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article class="proof-lane">
-          <div class="proof-side proof-clear">
-            <span class="lane-label">Spaced</span>
-            <p class="proof-phrase">I l 1  |  O 0  |  rn m  |  cl d  |  S 5  |  B 8</p>
-          </div>
+          <article class="proof-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Confusables</span>
+              <span class="micro-label">O0 / I l 1 / rn m</span>
+            </div>
+            <div class="confusable-grid">
+              <span>I l 1</span>
+              <span>O 0</span>
+              <span>rn m</span>
+            </div>
+            <p class="card-sample card-sample-squeezed">Il1 O0 rnm cld S5 B8</p>
+          </article>
 
-          <div class="proof-side proof-stress proof-confusable">
-            <span class="lane-label">Squeezed</span>
-            <p class="proof-phrase is-squeezed">Il1 O0 rnm cld S5 B8</p>
-          </div>
-        </article>
-
-        <article class="proof-lane">
-          <div class="proof-side proof-clear">
-            <span class="lane-label">Light</span>
-            <div class="mobile-stack">
-              <div class="mobile-card">
-                <strong>Returns</strong>
-                <span>Refunds, receipts, approvals.</span>
+          <article class="proof-card profile-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Profiles</span>
+              <span class="micro-label">Built in</span>
+            </div>
+            <div class="profile-strip">
+              <div class="profile-pill">
+                <strong>web_light_default</strong>
+                <span>bright / roomy</span>
               </div>
-              <div class="mobile-card">
-                <strong>Gate C12</strong>
-                <span>Boarding at 10:31 PM.</span>
+              <div class="profile-pill is-dark">
+                <strong>mobile_dark_low_contrast</strong>
+                <span>dim / tight</span>
               </div>
+              <div class="profile-pill is-soft">
+                <strong>fixed_latin_corpus</strong>
+                <span>A-Z / a-z / 0-9</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="proof-card output-card">
+            <div class="proof-card-head">
+              <span class="card-kicker">Output</span>
+              <span class="micro-label">JSON report</span>
+            </div>
+            <div class="metric-strip">
+              <div class="metric-pill">
+                <strong>0.82</strong>
+                <span>score</span>
+              </div>
+              <div class="metric-pill">
+                <strong>11px</strong>
+                <span>smallest</span>
+              </div>
+              <div class="metric-pill">
+                <strong>O0</strong>
+                <span>watch</span>
+              </div>
+            </div>
+            <p class="mini-report">{ "score": 0.82, "risk": ["O0", "rn/m"] }</p>
+          </article>
+        </section>
+
+        <section class="palette-section" id="palette">
+          <div class="palette-head">
+            <div>
+              <span class="eyebrow">Palette stress</span>
+              <h2>One font. Three color systems.</h2>
+            </div>
+            <div class="palette-key">
+              <span>Read</span>
+              <span>Edge</span>
+              <span>Voice</span>
             </div>
           </div>
 
-          <div class="proof-side proof-dark">
-            <span class="lane-label">Dim dark</span>
-            <div class="mobile-stack is-dark">
-              <div class="mobile-card">
-                <strong>Returns</strong>
-                <span>Refunds, receipts, approvals.</span>
+          <div class="palette-grid">
+            <article class="palette-card is-high-contrast">
+              <div class="palette-card-head">
+                <span class="card-kicker">01</span>
+                <span class="micro-label">white / black</span>
               </div>
-              <div class="mobile-card">
-                <strong>Gate C12</strong>
-                <span>Boarding at 10:31 PM.</span>
+              <div class="palette-scene">
+                <div class="palette-window">
+                  <div class="palette-row">
+                    <span>Order 1001</span>
+                    <strong>Ready</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Pass O0</span>
+                    <strong>I l 1</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Returns</span>
+                    <strong>rn m</strong>
+                  </div>
+                </div>
+                <p class="palette-sample">Returns, receipts, refunds.</p>
+                <p class="palette-pairs">O0 · I l 1 · rn m</p>
               </div>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
+              <div class="trait-row">
+                <div class="trait-pill">
+                  <span>Read</span>
+                  <strong>Locked</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Edge</span>
+                  <strong>Hard</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Voice</span>
+                  <strong>Exact</strong>
+                </div>
+              </div>
+            </article>
 
-    <section class="proof-grid" id="proof">
-      <article class="proof-card">
-        <div class="proof-card-head">
-          <span class="card-kicker">Low contrast</span>
-          <span class="micro-label">1001 / 10 I/O labs</span>
-        </div>
-        <p class="card-sample card-sample-clear">Order 1001 ships to 10 I/O labs.</p>
-        <p class="card-sample card-sample-fade">Order 1001 ships to 10 I/O labs.</p>
-      </article>
+            <article class="palette-card is-tinted">
+              <div class="palette-card-head">
+                <span class="card-kicker">02</span>
+                <span class="micro-label">lavender / plum</span>
+              </div>
+              <div class="palette-scene">
+                <div class="palette-window">
+                  <div class="palette-row">
+                    <span>Order 1001</span>
+                    <strong>Ready</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Pass O0</span>
+                    <strong>I l 1</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Returns</span>
+                    <strong>rn m</strong>
+                  </div>
+                </div>
+                <p class="palette-sample">Returns, receipts, refunds.</p>
+                <p class="palette-pairs">O0 · I l 1 · rn m</p>
+              </div>
+              <div class="trait-row">
+                <div class="trait-pill">
+                  <span>Read</span>
+                  <strong>Steady</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Edge</span>
+                  <strong>Bloom</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Voice</span>
+                  <strong>Lush</strong>
+                </div>
+              </div>
+            </article>
 
-      <article class="proof-card">
-        <div class="proof-card-head">
-          <span class="card-kicker">Blur</span>
-          <span class="micro-label">Refunds / receipts</span>
-        </div>
-        <p class="card-sample card-sample-clear">Returns, refunds, receipts.</p>
-        <p class="card-sample card-sample-blur">Returns, refunds, receipts.</p>
-      </article>
+            <article class="palette-card is-muted">
+              <div class="palette-card-head">
+                <span class="card-kicker">03</span>
+                <span class="micro-label">sage / stone</span>
+              </div>
+              <div class="palette-scene">
+                <div class="palette-window">
+                  <div class="palette-row">
+                    <span>Order 1001</span>
+                    <strong>Ready</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Pass O0</span>
+                    <strong>I l 1</strong>
+                  </div>
+                  <div class="palette-row">
+                    <span>Returns</span>
+                    <strong>rn m</strong>
+                  </div>
+                </div>
+                <p class="palette-sample">Returns, receipts, refunds.</p>
+                <p class="palette-pairs">O0 · I l 1 · rn m</p>
+              </div>
+              <div class="trait-row">
+                <div class="trait-pill">
+                  <span>Read</span>
+                  <strong>Fragile</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Edge</span>
+                  <strong>Hazy</strong>
+                </div>
+                <div class="trait-pill">
+                  <span>Voice</span>
+                  <strong>Quiet</strong>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
 
-      <article class="proof-card">
-        <div class="proof-card-head">
-          <span class="card-kicker">Dense UI</span>
-          <span class="micro-label">Crowded list</span>
-        </div>
-        <div class="dense-board">
-          <div class="dense-row">
-            <span>Queue</span>
-            <span>12</span>
-            <span>10:31 PM</span>
+        <section class="cta">
+          <div>
+            <span class="eyebrow">Immediate evidence</span>
+            <h2>Open the wall. Swap the font. Read the damage.</h2>
           </div>
-          <div class="dense-row">
-            <span>Invoice 105</span>
-            <span>O0</span>
-            <span>Ready</span>
-          </div>
-          <div class="dense-row is-crowded">
-            <span>Invoice 105 / Queue 12 / Gate C12 / O0 / rn m / 10:31 PM</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="proof-card profile-card">
-        <div class="proof-card-head">
-          <span class="card-kicker">Profiles</span>
-          <span class="micro-label">Built in</span>
-        </div>
-        <div class="profile-strip">
-          <div class="profile-pill">
-            <strong>web_light_default</strong>
-            <span>bright / roomy</span>
-          </div>
-          <div class="profile-pill is-dark">
-            <strong>mobile_dark_low_contrast</strong>
-            <span>dim / tight</span>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section class="cta">
-      <div>
-        <span class="eyebrow">Immediate evidence</span>
-        <h2>Open the wall. Swap the font. Read the damage.</h2>
-      </div>
-      <a class="button" href="/tool">Open Stress Lab</a>
-    </section>
-  </main>
-</div>
-</body>
+          <a class="button" href="/tool">Open Stress Lab</a>
+        </section>
+      </main>
+    </div>
+  </body>
 </html>
