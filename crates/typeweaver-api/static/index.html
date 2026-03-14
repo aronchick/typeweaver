@@ -1,396 +1,305 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TypeWeaver | Live Font Specimens</title>
-    <meta
-      name="description"
-      content="TypeWeaver lets you upload a font or paste a font file URL, turn the page into a live specimen, and read it through clear evidence-first checks."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/home.css" />
-  </head>
-  <body>
-    <div class="page-shell">
-      <header class="topbar">
-        <a class="brand" href="/">
-          <span class="brand-mark">Tw</span>
-          <span>TypeWeaver</span>
-        </a>
-        <a class="button" href="/tool">Try your font</a>
-      </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeWeaver — test fonts where typography gets hard</title>
+<style>
+  :root {
+    --bg: #f6efe6;
+    --bg-2: #efe4d6;
+    --surface: rgba(255, 251, 245, 0.94);
+    --surface-strong: #fffaf4;
+    --ink: #11161a;
+    --muted: #445057;
+    --muted-2: #5a666d;
+    --line: rgba(17, 22, 26, 0.14);
+    --accent: #e85e34;
+    --accent-2: #ff8b61;
+    --teal: #0e6f69;
+    --shadow: 0 24px 80px rgba(67, 45, 21, 0.12);
+    --shadow-soft: 0 12px 28px rgba(67, 45, 21, 0.08);
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --max: 1200px;
+  }
 
-      <main>
-        <section class="hero">
-          <div class="hero-copy">
-            <span class="eyebrow">Evidence-first type checks</span>
-            <h1 class="headline-split">
-              <span>Bring a font.</span>
-              <span>Read the whole page in it.</span>
-            </h1>
-            <p class="hero-intro">
-              On the live specimen page you can upload a file or paste a font file URL. The page
-              switches to that font immediately, then shows clear reading checks and the JSON
-              report.
-            </p>
-            <div class="hero-actions">
-              <a class="button" href="/tool">Open the live specimen</a>
-              <a class="ghost-button" href="#proof">See the checks</a>
-            </div>
-            <div class="signal-row">
-              <span>Small text</span>
-              <span>Low contrast</span>
-              <span>Soft edges</span>
-              <span>Packed lists</span>
-              <span>Three palettes</span>
-              <span>O0 I l 1 rn m</span>
-            </div>
-          </div>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: Inter, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255, 190, 150, 0.42), transparent 28%),
+      radial-gradient(circle at 100% 0%, rgba(110, 190, 180, 0.18), transparent 24%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  }
 
-          <div class="hero-board">
-            <article class="proof-lane">
-              <div class="proof-side proof-clear">
-                <span class="lane-label">Clear</span>
-                <div class="mini-ui">
-                  <div class="mini-ui-row">
-                    <span>Order 1001</span>
-                    <strong>8:15 PM</strong>
-                  </div>
-                  <div class="mini-ui-row">
-                    <span>O0 passcode</span>
-                    <strong>I l 1</strong>
-                  </div>
-                  <div class="mini-ui-row">
-                    <span>10 I/O labs</span>
-                    <strong>Ready</strong>
-                  </div>
-                </div>
-              </div>
+  a { color: inherit; text-decoration: none; }
+  .shell { width: min(var(--max), calc(100vw - 32px)); margin: 0 auto; padding: 24px 0 80px; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+  .brand-mark {
+    width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+    background: linear-gradient(135deg, rgba(232,94,52,0.16), rgba(14,111,105,0.14));
+    border: 1px solid rgba(17,22,26,0.1); font-family: Georgia, serif; font-size: 23px;
+  }
+  .nav { display: flex; flex-wrap: wrap; gap: 10px; }
+  .nav a, .button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 999px; padding: 11px 16px; border: 1px solid rgba(17,22,26,0.12);
+    background: rgba(255,255,255,0.82); color: var(--ink); font-weight: 600;
+  }
+  .button.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white; border-color: transparent;
+  }
 
-              <div class="proof-side proof-stress proof-tiny">
-                <span class="lane-label">11px</span>
-                <div class="mini-ui is-tight">
-                  <div class="mini-ui-row">
-                    <span>Order 1001</span>
-                    <strong>8:15 PM</strong>
-                  </div>
-                  <div class="mini-ui-row">
-                    <span>O0 passcode</span>
-                    <strong>I l 1</strong>
-                  </div>
-                  <div class="mini-ui-row">
-                    <span>10 I/O labs</span>
-                    <strong>Ready</strong>
-                  </div>
-                </div>
-              </div>
-            </article>
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl);
+    box-shadow: var(--shadow); backdrop-filter: blur(18px);
+  }
 
-            <article class="proof-lane">
-              <div class="proof-side proof-clear">
-                <span class="lane-label">Spaced</span>
-                <p class="proof-phrase">
-                  I l 1 | O 0 | rn m | cl d | S 5 | B 8
-                </p>
-              </div>
+  .hero { padding: 36px; margin-bottom: 22px; }
+  .hero-grid {
+    display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr); gap: 22px;
+  }
+  .eyebrow, .mini-kicker {
+    text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; color: var(--muted-2);
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.82); border: 1px solid rgba(17,22,26,0.08);
+  }
+  h1, h2, h3 { margin: 0; }
+  h1 {
+    margin-top: 16px; max-width: 10ch; font-family: "Iowan Old Style", Georgia, serif;
+    font-size: clamp(3rem, 5vw, 5rem); line-height: 0.94; letter-spacing: -0.06em;
+  }
+  .hero-copy {
+    margin: 16px 0 0; max-width: 60ch; color: var(--muted); font-size: 18px; line-height: 1.75;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+  .callouts { display: grid; gap: 14px; }
+  .callout {
+    padding: 18px; border-radius: var(--radius-lg); border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
+    box-shadow: var(--shadow-soft);
+  }
+  .callout p, .section p, .grid-card p, li { color: var(--muted); line-height: 1.7; }
+  .mini-value { display: block; font-size: 28px; letter-spacing: -0.04em; margin: 6px 0 2px; }
 
-              <div class="proof-side proof-stress proof-confusable">
-                <span class="lane-label">Tighter</span>
-                <p class="proof-phrase is-squeezed">Il1 O0 rnm cld S5 B8</p>
-              </div>
-            </article>
+  .section {
+    padding: 28px; margin-top: 22px;
+  }
+  .section-head { max-width: 64ch; margin-bottom: 18px; }
+  .section-head h2 {
+    margin-top: 8px; font-family: "Iowan Old Style", Georgia, serif;
+    font-size: clamp(2rem, 3.2vw, 3rem); line-height: 0.98; letter-spacing: -0.045em;
+  }
+  .section-head p { font-size: 16px; }
+  .grid-2, .grid-3, .grid-4 { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-card {
+    padding: 20px; border-radius: var(--radius-lg); background: var(--surface-strong);
+    border: 1px solid var(--line);
+  }
+  .grid-card h3 { font-size: 20px; letter-spacing: -0.03em; margin-bottom: 8px; }
 
-            <article class="proof-lane">
-              <div class="proof-side proof-clear">
-                <span class="lane-label">Light</span>
-                <div class="mobile-stack">
-                  <div class="mobile-card">
-                    <strong>Returns</strong>
-                    <span>Refunds, receipts, approvals.</span>
-                  </div>
-                  <div class="mobile-card">
-                    <strong>Gate C12</strong>
-                    <span>Boarding at 10:31 PM.</span>
-                  </div>
-                </div>
-              </div>
+  .problem-list, .solution-list {
+    margin: 14px 0 0; padding-left: 18px;
+  }
 
-              <div class="proof-side proof-dark">
-                <span class="lane-label">Dark screen</span>
-                <div class="mobile-stack is-dark">
-                  <div class="mobile-card">
-                    <strong>Returns</strong>
-                    <span>Refunds, receipts, approvals.</span>
-                  </div>
-                  <div class="mobile-card">
-                    <strong>Gate C12</strong>
-                    <span>Boarding at 10:31 PM.</span>
-                  </div>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
+  .graphic {
+    padding: 22px; border-radius: var(--radius-lg); border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,244,236,0.96));
+  }
+  .graphic-title { font-weight: 700; margin-bottom: 14px; }
+  .before-after { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .panel {
+    padding: 16px; border-radius: var(--radius-md); border: 1px solid rgba(17,22,26,0.1);
+    background: white;
+  }
+  .panel h4 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-2); }
+  .specimen-display { font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(1.6rem, 2.8vw, 2.5rem); line-height: 1; letter-spacing: -0.04em; }
+  .specimen-body { margin-top: 12px; font-size: 15px; }
+  .degraded { filter: blur(0.5px) contrast(0.9); opacity: 0.82; }
+  .glyph-row {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  .glyph-chip {
+    padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(17,22,26,0.1); background: white;
+  }
 
-        <section class="proof-grid" id="proof">
-          <article class="proof-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Low contrast</span>
-              <span class="micro-label">1001 / 10 I/O labs</span>
-            </div>
-            <p class="card-sample card-sample-clear">
-              Order 1001 ships to 10 I/O labs.
-            </p>
-            <p class="card-sample card-sample-fade">
-              Order 1001 ships to 10 I/O labs.
-            </p>
-          </article>
+  .footer-cta {
+    margin-top: 22px; padding: 32px; text-align: center;
+  }
+  .footer-cta h2 {
+    font-family: "Iowan Old Style", Georgia, serif; font-size: clamp(2rem, 3vw, 3rem);
+    line-height: 1; letter-spacing: -0.05em;
+  }
+  .footer-cta p { max-width: 50ch; margin: 14px auto 0; color: var(--muted); font-size: 17px; }
 
-          <article class="proof-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Soft edges</span>
-              <span class="micro-label">Refunds / receipts</span>
-            </div>
-            <p class="card-sample card-sample-clear">
-              Returns, refunds, receipts.
-            </p>
-            <p class="card-sample card-sample-blur">
-              Returns, refunds, receipts.
-            </p>
-          </article>
-
-          <article class="proof-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Packed lists</span>
-              <span class="micro-label">Crowded list</span>
-            </div>
-            <div class="dense-board">
-              <div class="dense-row">
-                <span>Queue</span>
-                <span>12</span>
-                <span>10:31 PM</span>
-              </div>
-              <div class="dense-row">
-                <span>Invoice 105</span>
-                <span>O0</span>
-                <span>Ready</span>
-              </div>
-              <div class="dense-row is-crowded">
-                <span
-                  >Invoice 105 / Queue 12 / Gate C12 / O0 / rn m / 10:31
-                  PM</span
-                >
-              </div>
-            </div>
-          </article>
-
-          <article class="proof-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Look-alikes</span>
-              <span class="micro-label">O0 / I l 1 / rn m</span>
-            </div>
-            <div class="confusable-grid">
-              <span>I l 1</span>
-              <span>O 0</span>
-              <span>rn m</span>
-            </div>
-            <p class="card-sample card-sample-squeezed">Il1 O0 rnm cld S5 B8</p>
-          </article>
-
-          <article class="proof-card profile-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Saved checks</span>
-              <span class="micro-label">What runs today</span>
-            </div>
-            <div class="profile-strip">
-              <div class="profile-pill">
-                <strong>Web light</strong>
-                <span>bright / roomy</span>
-              </div>
-              <div class="profile-pill is-dark">
-                <strong>Dark mobile</strong>
-                <span>dim / tight</span>
-              </div>
-              <div class="profile-pill is-soft">
-                <strong>Latin proof text</strong>
-                <span>A-Z / a-z / 0-9</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="proof-card output-card">
-            <div class="proof-card-head">
-              <span class="card-kicker">Report data</span>
-              <span class="micro-label">JSON report</span>
-            </div>
-            <div class="metric-strip">
-              <div class="metric-pill">
-                <strong>0.82</strong>
-                <span>score</span>
-              </div>
-              <div class="metric-pill">
-                <strong>11px</strong>
-                <span>small text</span>
-              </div>
-              <div class="metric-pill">
-                <strong>O0</strong>
-                <span>look-alikes</span>
-              </div>
-            </div>
-            <p class="mini-report">{ "score": 0.82, "risk": ["O0", "rn/m"] }</p>
-          </article>
-        </section>
-
-        <section class="palette-section" id="palette">
-          <div class="palette-head">
-            <div>
-              <span class="eyebrow">Three color settings</span>
-              <h2>One font. Three color settings.</h2>
-            </div>
-            <div class="palette-key">
-              <span>Read</span>
-              <span>Edge</span>
-              <span>Voice</span>
-            </div>
-          </div>
-
-          <div class="palette-grid">
-            <article class="palette-card is-high-contrast">
-              <div class="palette-card-head">
-                <span class="card-kicker">01</span>
-                <span class="micro-label">white / black</span>
-              </div>
-              <div class="palette-scene">
-                <div class="palette-window">
-                  <div class="palette-row">
-                    <span>Order 1001</span>
-                    <strong>Ready</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Pass O0</span>
-                    <strong>I l 1</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Returns</span>
-                    <strong>rn m</strong>
-                  </div>
-                </div>
-                <p class="palette-sample">Returns, receipts, refunds.</p>
-                <p class="palette-pairs">O0 · I l 1 · rn m</p>
-              </div>
-              <div class="trait-row">
-                <div class="trait-pill">
-                  <span>Read</span>
-                  <strong>Locked</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Edge</span>
-                  <strong>Hard</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Voice</span>
-                  <strong>Exact</strong>
-                </div>
-              </div>
-            </article>
-
-            <article class="palette-card is-tinted">
-              <div class="palette-card-head">
-                <span class="card-kicker">02</span>
-                <span class="micro-label">lavender / plum</span>
-              </div>
-              <div class="palette-scene">
-                <div class="palette-window">
-                  <div class="palette-row">
-                    <span>Order 1001</span>
-                    <strong>Ready</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Pass O0</span>
-                    <strong>I l 1</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Returns</span>
-                    <strong>rn m</strong>
-                  </div>
-                </div>
-                <p class="palette-sample">Returns, receipts, refunds.</p>
-                <p class="palette-pairs">O0 · I l 1 · rn m</p>
-              </div>
-              <div class="trait-row">
-                <div class="trait-pill">
-                  <span>Read</span>
-                  <strong>Steady</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Edge</span>
-                  <strong>Bloom</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Voice</span>
-                  <strong>Lush</strong>
-                </div>
-              </div>
-            </article>
-
-            <article class="palette-card is-muted">
-              <div class="palette-card-head">
-                <span class="card-kicker">03</span>
-                <span class="micro-label">sage / stone</span>
-              </div>
-              <div class="palette-scene">
-                <div class="palette-window">
-                  <div class="palette-row">
-                    <span>Order 1001</span>
-                    <strong>Ready</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Pass O0</span>
-                    <strong>I l 1</strong>
-                  </div>
-                  <div class="palette-row">
-                    <span>Returns</span>
-                    <strong>rn m</strong>
-                  </div>
-                </div>
-                <p class="palette-sample">Returns, receipts, refunds.</p>
-                <p class="palette-pairs">O0 · I l 1 · rn m</p>
-              </div>
-              <div class="trait-row">
-                <div class="trait-pill">
-                  <span>Read</span>
-                  <strong>Fragile</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Edge</span>
-                  <strong>Hazy</strong>
-                </div>
-                <div class="trait-pill">
-                  <span>Voice</span>
-                  <strong>Quiet</strong>
-                </div>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        <section class="cta">
-          <div>
-            <span class="eyebrow">Try your font</span>
-            <h2 class="headline-split">
-              <span>Upload a font.</span>
-              <span>Or paste a font file URL.</span>
-            </h2>
-          </div>
-          <a class="button" href="/tool">Open the live specimen</a>
-        </section>
-      </main>
+  @media (max-width: 960px) {
+    .hero-grid, .grid-4, .grid-3, .grid-2, .before-after { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .shell { width: min(100vw - 20px, var(--max)); padding-top: 16px; }
+    .hero, .section, .footer-cta { padding: 22px; }
+    .topbar { flex-direction: column; align-items: flex-start; }
+    h1 { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>TypeWeaver</div>
     </div>
-  </body>
+    <nav class="nav">
+      <a href="/">Home</a>
+      <a href="/tool.html">Tool</a>
+      <a href="/scenarios.html">Scenarios</a>
+      <a href="/examples.html">Examples</a>
+    </nav>
+  </div>
+
+  <section class="card hero">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Typography under pressure</span>
+        <h1>Test fonts where typography actually gets hard.</h1>
+        <p class="hero-copy">
+          TypeWeaver helps you compare fonts under the conditions that expose weak readability fastest: smaller text, darker interfaces,
+          blur, compression, OCR pressure, and dense layouts. It is for choosing what survives real use, not admiring a perfect mockup.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="/tool.html">Try the tool</a>
+          <a class="button" href="#why">Why this matters</a>
+        </div>
+      </div>
+      <aside class="callouts">
+        <div class="callout">
+          <div class="mini-kicker">What it helps you do</div>
+          <span class="mini-value">Choose better</span>
+          <p>Compare plausible font candidates side by side and see where clarity starts to collapse.</p>
+        </div>
+        <div class="callout">
+          <div class="mini-kicker">Better framing</div>
+          <span class="mini-value">Break it on purpose</span>
+          <p>Pick a font. Stress it. See if it still reads when the environment gets ugly.</p>
+        </div>
+        <div class="callout">
+          <div class="mini-kicker">Default path</div>
+          <span class="mini-value">Start with Google Fonts</span>
+          <p>The tool should not begin with upload friction. Starter fonts should be one click away.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="card section">
+    <div class="section-head">
+      <div class="mini-kicker">What people do today</div>
+      <h2>Most teams still evaluate type in presentation mode.</h2>
+      <p>That is fine for taste. It is weak for decisions.</p>
+    </div>
+    <div class="grid-4">
+      <article class="grid-card"><h3>Pick a font</h3><p>Usually from a brand deck, design system, or clean mockup.</p></article>
+      <article class="grid-card"><h3>Test a few strings</h3><p>Mostly in generous layouts and ideal rendering conditions.</p></article>
+      <article class="grid-card"><h3>Approve it</h3><p>Because it feels polished and intentional in review.</p></article>
+      <article class="grid-card"><h3>Ship it</h3><p>Then discover the hard cases after it reaches real product conditions.</p></article>
+    </div>
+  </section>
+
+  <section class="card section" id="why">
+    <div class="section-head">
+      <div class="mini-kicker">Here is the problem with that</div>
+      <h2>Typography fails in the field, not in the mockup.</h2>
+      <p>Weak fonts often look fine right up until the moment the conditions stop being generous.</p>
+    </div>
+    <div class="grid-2">
+      <article class="grid-card">
+        <h3>Pressure points</h3>
+        <ul class="problem-list">
+          <li>small text and dense tables</li>
+          <li>low contrast and dark UI</li>
+          <li>blur, glare, and image compression</li>
+          <li>OCR and machine capture</li>
+          <li>lookalike glyph collisions like O/0 and I/l/1</li>
+        </ul>
+      </article>
+      <article class="graphic">
+        <div class="graphic-title">Clean review vs real-world pressure</div>
+        <div class="before-after">
+          <div class="panel">
+            <h4>Review mode</h4>
+            <div class="specimen-display">Operational Readiness</div>
+            <div class="specimen-body">Invoice total: 10801 · Device code: IL10 · Mission window closes at 18:40</div>
+          </div>
+          <div class="panel degraded">
+            <h4>Field conditions</h4>
+            <div class="specimen-display">Operational Readiness</div>
+            <div class="specimen-body">Invoice total: 10801 · Device code: IL10 · Mission window closes at 18:40</div>
+          </div>
+        </div>
+        <div class="glyph-row">
+          <span class="glyph-chip">O / 0</span>
+          <span class="glyph-chip">I / l / 1</span>
+          <span class="glyph-chip">rn / m</span>
+          <span class="glyph-chip">S / 5</span>
+          <span class="glyph-chip">B / 8</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="card section">
+    <div class="section-head">
+      <div class="mini-kicker">What we do</div>
+      <h2>TypeWeaver shows where readability starts to collapse.</h2>
+      <p>It helps you choose fonts for resilience, not just aesthetics.</p>
+    </div>
+    <div class="grid-3">
+      <article class="grid-card"><h3>Start from real fonts</h3><p>Use starter fonts from Google Fonts or bring your own when you need to.</p></article>
+      <article class="grid-card"><h3>Run realistic scenarios</h3><p>Apply the kinds of pressure that expose weak legibility fast.</p></article>
+      <article class="grid-card"><h3>Compare outcomes</h3><p>See which candidate stays calmer, clearer, and more trustworthy.</p></article>
+    </div>
+  </section>
+
+  <section class="card section">
+    <div class="section-head">
+      <div class="mini-kicker">Why you would use it</div>
+      <h2>When the typography decision actually matters.</h2>
+      <p>These are the cases where “it looked good in the design review” is not enough.</p>
+    </div>
+    <div class="grid-4">
+      <article class="grid-card"><h3>OCR + document capture</h3><p>Text still needs to separate cleanly when a camera or parser sees it.</p></article>
+      <article class="grid-card"><h3>Enterprise dashboards</h3><p>Dense tables, controls, and secondary text punish weak type choices quickly.</p></article>
+      <article class="grid-card"><h3>Labels + packaging</h3><p>Small print and rough conditions are where character confusion becomes expensive.</p></article>
+      <article class="grid-card"><h3>Field environments</h3><p>Low-quality displays, motion, distance, and pressure make fragile fonts obvious.</p></article>
+    </div>
+  </section>
+
+  <section class="card footer-cta">
+    <h2>Stop choosing fonts only at their best.</h2>
+    <p>Open the tool, start with a known font, and see what survives when the conditions stop being polite.</p>
+    <div class="actions" style="justify-content:center;">
+      <a class="button primary" href="/tool.html">Open the tool</a>
+      <a class="button" href="/examples.html">See examples</a>
+    </div>
+  </section>
+</main>
+</body>
 </html>
