@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TypeWeaver | Typography Stress Tests</title>
+    <title>TypeWeaver | Live Font Specimens</title>
     <meta
       name="description"
-      content="TypeWeaver makes typography failure visible fast with side-by-side stress proofs for tiny text, low contrast, blur, confusable glyphs, density, and dark mode."
+      content="TypeWeaver lets you upload a font or paste a font file URL, turn the page into a live specimen, and read it through clear evidence-first checks."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,24 +23,32 @@
           <span class="brand-mark">Tw</span>
           <span>TypeWeaver</span>
         </a>
-        <a class="button" href="/tool">Open Stress Lab</a>
+        <a class="button" href="/tool">Try your font</a>
       </header>
 
       <main>
         <section class="hero">
           <div class="hero-copy">
             <span class="eyebrow">Evidence-first type checks</span>
-            <h1>See the font fail before you ship it.</h1>
+            <h1 class="headline-split">
+              <span>Bring a font.</span>
+              <span>Read the whole page in it.</span>
+            </h1>
+            <p class="hero-intro">
+              On the live specimen page you can upload a file or paste a font file URL. The page
+              switches to that font immediately, then shows clear reading checks and the JSON
+              report.
+            </p>
             <div class="hero-actions">
-              <a class="button" href="/tool">Open /tool</a>
-              <a class="ghost-button" href="#proof">See Proof</a>
+              <a class="button" href="/tool">Open the live specimen</a>
+              <a class="ghost-button" href="#proof">See the checks</a>
             </div>
             <div class="signal-row">
-              <span>Tiny</span>
+              <span>Small text</span>
               <span>Low contrast</span>
-              <span>Blur</span>
-              <span>Dense UI</span>
-              <span>Palette stress</span>
+              <span>Soft edges</span>
+              <span>Packed lists</span>
+              <span>Three palettes</span>
               <span>O0 I l 1 rn m</span>
             </div>
           </div>
@@ -93,7 +101,7 @@
               </div>
 
               <div class="proof-side proof-stress proof-confusable">
-                <span class="lane-label">Squeezed</span>
+                <span class="lane-label">Tighter</span>
                 <p class="proof-phrase is-squeezed">Il1 O0 rnm cld S5 B8</p>
               </div>
             </article>
@@ -114,7 +122,7 @@
               </div>
 
               <div class="proof-side proof-dark">
-                <span class="lane-label">Dim dark</span>
+                <span class="lane-label">Dark screen</span>
                 <div class="mobile-stack is-dark">
                   <div class="mobile-card">
                     <strong>Returns</strong>
@@ -146,7 +154,7 @@
 
           <article class="proof-card">
             <div class="proof-card-head">
-              <span class="card-kicker">Blur</span>
+              <span class="card-kicker">Soft edges</span>
               <span class="micro-label">Refunds / receipts</span>
             </div>
             <p class="card-sample card-sample-clear">
@@ -159,7 +167,7 @@
 
           <article class="proof-card">
             <div class="proof-card-head">
-              <span class="card-kicker">Dense UI</span>
+              <span class="card-kicker">Packed lists</span>
               <span class="micro-label">Crowded list</span>
             </div>
             <div class="dense-board">
@@ -184,7 +192,7 @@
 
           <article class="proof-card">
             <div class="proof-card-head">
-              <span class="card-kicker">Confusables</span>
+              <span class="card-kicker">Look-alikes</span>
               <span class="micro-label">O0 / I l 1 / rn m</span>
             </div>
             <div class="confusable-grid">
@@ -197,20 +205,20 @@
 
           <article class="proof-card profile-card">
             <div class="proof-card-head">
-              <span class="card-kicker">Profiles</span>
-              <span class="micro-label">Built in</span>
+              <span class="card-kicker">Saved checks</span>
+              <span class="micro-label">What runs today</span>
             </div>
             <div class="profile-strip">
               <div class="profile-pill">
-                <strong>web_light_default</strong>
+                <strong>Web light</strong>
                 <span>bright / roomy</span>
               </div>
               <div class="profile-pill is-dark">
-                <strong>mobile_dark_low_contrast</strong>
+                <strong>Dark mobile</strong>
                 <span>dim / tight</span>
               </div>
               <div class="profile-pill is-soft">
-                <strong>fixed_latin_corpus</strong>
+                <strong>Latin proof text</strong>
                 <span>A-Z / a-z / 0-9</span>
               </div>
             </div>
@@ -218,7 +226,7 @@
 
           <article class="proof-card output-card">
             <div class="proof-card-head">
-              <span class="card-kicker">Output</span>
+              <span class="card-kicker">Report data</span>
               <span class="micro-label">JSON report</span>
             </div>
             <div class="metric-strip">
@@ -228,11 +236,11 @@
               </div>
               <div class="metric-pill">
                 <strong>11px</strong>
-                <span>smallest</span>
+                <span>small text</span>
               </div>
               <div class="metric-pill">
                 <strong>O0</strong>
-                <span>watch</span>
+                <span>look-alikes</span>
               </div>
             </div>
             <p class="mini-report">{ "score": 0.82, "risk": ["O0", "rn/m"] }</p>
@@ -242,8 +250,8 @@
         <section class="palette-section" id="palette">
           <div class="palette-head">
             <div>
-              <span class="eyebrow">Palette stress</span>
-              <h2>One font. Three color systems.</h2>
+              <span class="eyebrow">Three color settings</span>
+              <h2>One font. Three color settings.</h2>
             </div>
             <div class="palette-key">
               <span>Read</span>
@@ -374,10 +382,13 @@
 
         <section class="cta">
           <div>
-            <span class="eyebrow">Immediate evidence</span>
-            <h2>Open the wall. Swap the font. Read the damage.</h2>
+            <span class="eyebrow">Try your font</span>
+            <h2 class="headline-split">
+              <span>Upload a font.</span>
+              <span>Or paste a font file URL.</span>
+            </h2>
           </div>
-          <a class="button" href="/tool">Open Stress Lab</a>
+          <a class="button" href="/tool">Open the live specimen</a>
         </section>
       </main>
     </div>

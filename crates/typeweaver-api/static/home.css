@@ -165,12 +165,25 @@ a {
   font-family: "Fraunces", Georgia, serif;
   font-weight: 700;
   letter-spacing: -0.06em;
+  text-wrap: balance;
 }
 
 .hero-copy h1 {
-  max-width: 8.8ch;
+  max-width: 10.6ch;
   font-size: clamp(3.4rem, 6vw, 5.6rem);
   line-height: 0.9;
+}
+
+.headline-split span {
+  display: block;
+}
+
+.hero-intro {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--muted);
+  font-size: 1.04rem;
+  line-height: 1.6;
 }
 
 .hero-actions {
@@ -606,6 +619,7 @@ a {
   font-size: clamp(2rem, 4vw, 3.4rem);
   line-height: 0.92;
   letter-spacing: -0.06em;
+  text-wrap: balance;
 }
 
 .palette-key {
@@ -814,6 +828,7 @@ a {
   margin-top: 14px;
   font-size: clamp(2rem, 4vw, 3.45rem);
   line-height: 0.94;
+  max-width: 11.5ch;
 }
 
 @keyframes rise {

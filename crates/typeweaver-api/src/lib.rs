@@ -14,6 +14,7 @@ use axum::routing::{get, post};
 use rust_embed::Embed;
 use serde::Deserialize;
 use tokio::sync::Mutex;
+use uuid::Uuid;
 
 use typeweaver_bench::run_report;
 use typeweaver_core::{BenchmarkProfile, REGISTRY_DIR_NAME};
@@ -90,6 +91,7 @@ fn app(registry_root: PathBuf) -> Router {
 
     Router::new()
         .route("/api/fonts/ingest", post(handle_ingest))
+        .route("/api/fonts/ingest-url", post(handle_ingest_url))
         .route("/api/fonts", get(handle_list))
         .route("/api/fonts/{id}", get(handle_get_font))
         .route("/api/fonts/{id}/file", get(handle_font_file))
@@ -219,6 +221,174 @@ async fn handle_ingest(
     let body = format!(
         "{{\"ingested\": {}, \"total\": {}}}",
         saved_count,
+        registry.assets.len()
+    );
+    active_gauge.dec();
+    duration_hist.observe(timer.elapsed().as_secs_f64());
+    json_response(StatusCode::OK, &body)
+}
+
+#[derive(Deserialize)]
+struct IngestUrlRequest {
+    url: String,
+    declared_license: Option<String>,
+}
+
+async fn handle_ingest_url(
+    State(state): State<Arc<Mutex<AppState>>>,
+    _auth: ValidToken,
+    axum::Json(payload): axum::Json<IngestUrlRequest>,
+) -> Response {
+    let timer = Instant::now();
+    let st = state.lock().await;
+    let reg_root = st.registry_root.clone();
+    let fonts_counter = st.metrics.fonts_ingested_total.clone();
+    let registry_gauge = st.metrics.registry_size.clone();
+    let upload_bytes = st.metrics.upload_bytes_total.clone();
+    st.metrics.requests_total.inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["ingest_url"])
+        .inc();
+    st.metrics.active_requests.inc();
+    let duration_hist = st.metrics.request_duration.clone();
+    let active_gauge = st.metrics.active_requests.clone();
+    drop(st);
+
+    let remote_url = match reqwest::Url::parse(payload.url.trim()) {
+        Ok(url) if matches!(url.scheme(), "http" | "https") => url,
+        Ok(_) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::BAD_REQUEST, "font URL must use http or https");
+        }
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::BAD_REQUEST, &format!("invalid font URL: {e}"));
+        }
+    };
+
+    let response = match reqwest::get(remote_url.clone()).await {
+        Ok(response) => response,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::BAD_GATEWAY,
+                &format!("could not fetch remote font: {e}"),
+            );
+        }
+    };
+
+    if !response.status().is_success() {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::BAD_GATEWAY,
+            &format!("remote font returned {}", response.status()),
+        );
+    }
+
+    let content_type = response
+        .headers()
+        .get(reqwest::header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value.to_string());
+    let bytes = match response.bytes().await {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::BAD_GATEWAY,
+                &format!("could not read remote font: {e}"),
+            );
+        }
+    };
+
+    let file_name = match remote_file_name(&remote_url, content_type.as_deref()) {
+        Ok(file_name) => file_name,
+        Err(message) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::BAD_REQUEST, &message);
+        }
+    };
+
+    let upload_dir = reg_root.join("uploads");
+    if let Err(e) = std::fs::create_dir_all(&upload_dir) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("failed to create upload dir: {e}"),
+        );
+    }
+
+    let font_path = upload_dir.join(&file_name);
+    if let Err(e) = std::fs::write(&font_path, &bytes) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("failed to write {}: {e}", file_name),
+        );
+    }
+
+    if let Some(license) = payload
+        .declared_license
+        .as_deref()
+        .map(str::trim)
+        .filter(|license| !license.is_empty() && *license != "unknown")
+    {
+        let sidecar_name = license_sidecar_name(&file_name);
+        let sidecar_path = upload_dir.join(sidecar_name);
+        if let Err(e) = std::fs::write(&sidecar_path, license) {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &format!("failed to write license file: {e}"),
+            );
+        }
+    }
+
+    upload_bytes.inc_by(bytes.len() as u64);
+
+    let registry = match ingest_dir(&upload_dir) {
+        Ok(r) => r,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &format!("ingest failed: {e}"),
+            );
+        }
+    };
+
+    let reg_dir = registry_dir(&reg_root);
+    if let Err(e) = save_registry_at(&reg_dir, &registry) {
+        active_gauge.dec();
+        duration_hist.observe(timer.elapsed().as_secs_f64());
+        return error_response(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("save failed: {e}"),
+        );
+    }
+
+    let saved_count = registry
+        .assets
+        .iter()
+        .filter(|asset| asset.file_name == file_name)
+        .count() as u64;
+    fonts_counter.inc_by(saved_count.max(1));
+    registry_gauge.set(registry.assets.len() as i64);
+
+    let body = format!(
+        "{{\"file_name\": \"{}\", \"total\": {}}}",
+        file_name,
         registry.assets.len()
     );
     active_gauge.dec();
@@ -573,6 +743,74 @@ fn error_response(status: StatusCode, message: &str) -> Response {
     json_response(status, &body)
 }
 
+fn remote_file_name(url: &reqwest::Url, content_type: Option<&str>) -> Result<String, String> {
+    let base_name = url
+        .path_segments()
+        .and_then(|mut segments| segments.rfind(|segment| !segment.is_empty()))
+        .map(sanitize_file_name)
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| format!("remote-font-{}", Uuid::new_v4().simple()));
+
+    let existing_extension = base_name
+        .rsplit_once('.')
+        .map(|(_, ext)| ext.to_ascii_lowercase());
+    if let Some(extension) = existing_extension.as_deref()
+        && is_supported_font_extension(extension)
+    {
+        return Ok(base_name);
+    }
+
+    let extension = infer_font_extension(content_type)
+        .ok_or_else(|| "font URL must end in .ttf, .otf, .woff, or .woff2".to_string())?;
+    let stem = base_name
+        .rsplit_once('.')
+        .map(|(stem, _)| stem)
+        .unwrap_or(base_name.as_str());
+    Ok(format!("{stem}.{extension}"))
+}
+
+fn sanitize_file_name(input: &str) -> String {
+    let mut sanitized = String::with_capacity(input.len());
+    for ch in input.chars() {
+        if ch.is_ascii_alphanumeric() || matches!(ch, '.' | '-' | '_') {
+            sanitized.push(ch);
+        } else if matches!(ch, ' ' | '+' | '%') {
+            sanitized.push('-');
+        }
+    }
+
+    let trimmed = sanitized.trim_matches(|ch| matches!(ch, '.' | '-'));
+    let collapsed = trimmed
+        .split('-')
+        .filter(|segment| !segment.is_empty())
+        .collect::<Vec<_>>()
+        .join("-");
+    collapsed.chars().take(96).collect()
+}
+
+fn license_sidecar_name(file_name: &str) -> String {
+    match file_name.rsplit_once('.') {
+        Some((stem, _)) => format!("{stem}.license"),
+        None => format!("{file_name}.license"),
+    }
+}
+
+fn infer_font_extension(content_type: Option<&str>) -> Option<String> {
+    match content_type?.split(';').next()?.trim() {
+        "font/ttf" | "application/x-font-ttf" | "application/font-sfnt" => Some("ttf".to_string()),
+        "font/otf" | "application/x-font-otf" | "application/vnd.ms-opentype" => {
+            Some("otf".to_string())
+        }
+        "font/woff" | "application/font-woff" => Some("woff".to_string()),
+        "font/woff2" | "application/font-woff2" => Some("woff2".to_string()),
+        _ => None,
+    }
+}
+
+fn is_supported_font_extension(extension: &str) -> bool {
+    matches!(extension, "ttf" | "otf" | "woff" | "woff2")
+}
+
 fn get_disk_free_bytes() -> u64 {
     std::process::Command::new("df")
         .args(["--output=avail", "-k", "/opt/typeweaver"])
@@ -583,7 +821,7 @@ fn get_disk_free_bytes() -> u64 {
             stdout
                 .lines()
                 .nth(1)
-                .and_then(|line| line.trim().split_whitespace().next())
+                .and_then(|line| line.split_whitespace().next())
                 .and_then(|val| val.parse::<u64>().ok())
                 .map(|kb| kb * 1024)
         })
@@ -609,7 +847,46 @@ fn get_memory_rss_bytes() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::resolve_static_path;
+    use super::{infer_font_extension, remote_file_name, resolve_static_path, sanitize_file_name};
+
+    #[test]
+    fn sanitizes_remote_file_names() {
+        assert_eq!(
+            sanitize_file_name("Acme Sans Regular (2026).woff2"),
+            "Acme-Sans-Regular-2026.woff2"
+        );
+        assert_eq!(sanitize_file_name("../../weird?.ttf"), "weird.ttf");
+    }
+
+    #[test]
+    fn infers_font_extension_from_content_type() {
+        assert_eq!(
+            infer_font_extension(Some("font/woff2")),
+            Some("woff2".to_string())
+        );
+        assert_eq!(
+            infer_font_extension(Some("application/vnd.ms-opentype; charset=binary")),
+            Some("otf".to_string())
+        );
+        assert_eq!(infer_font_extension(Some("text/css")), None);
+    }
+
+    #[test]
+    fn keeps_supported_remote_extension() {
+        let url = reqwest::Url::parse("https://example.com/fonts/OpenPixel-Regular.woff2").unwrap();
+        assert_eq!(
+            remote_file_name(&url, Some("font/woff2")).unwrap(),
+            "OpenPixel-Regular.woff2"
+        );
+    }
+
+    #[test]
+    fn uses_content_type_when_remote_url_has_no_extension() {
+        let url = reqwest::Url::parse("https://example.com/font?id=123").unwrap();
+        let file_name = remote_file_name(&url, Some("font/ttf")).unwrap();
+        assert!(file_name.starts_with("font"));
+        assert!(file_name.ends_with(".ttf"));
+    }
 
     #[test]
     fn resolves_root_and_nested_static_routes() {
