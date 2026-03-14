@@ -92,6 +92,7 @@ fn app(registry_root: PathBuf) -> Router {
         .route("/api/fonts/ingest", post(handle_ingest))
         .route("/api/fonts", get(handle_list))
         .route("/api/fonts/{id}", get(handle_get_font))
+        .route("/api/fonts/{id}/file", get(handle_font_file))
         .route("/api/fonts/{id}/report", get(handle_report))
         .route("/healthz", get(handle_healthz))
         .route("/api/health", get(handle_healthz))
@@ -297,6 +298,71 @@ async fn handle_get_font(
         }
         Err(e) => error_response(StatusCode::NOT_FOUND, &format!("{e}")),
     };
+    active_gauge.dec();
+    duration_hist.observe(timer.elapsed().as_secs_f64());
+    resp
+}
+
+async fn handle_font_file(
+    State(state): State<Arc<Mutex<AppState>>>,
+    _auth: ValidToken,
+    axum::extract::Path(id): axum::extract::Path<String>,
+) -> Response {
+    let timer = Instant::now();
+    let st = state.lock().await;
+    let reg_dir = registry_dir(&st.registry_root);
+    st.metrics.requests_total.inc();
+    st.metrics
+        .api_calls_total
+        .with_label_values(&["font_file"])
+        .inc();
+    st.metrics.active_requests.inc();
+    let duration_hist = st.metrics.request_duration.clone();
+    let active_gauge = st.metrics.active_requests.clone();
+    drop(st);
+
+    let registry = match load_registry_at(&reg_dir) {
+        Ok(r) => r,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::NOT_FOUND, &format!("registry not found: {e}"));
+        }
+    };
+
+    let asset = match find_asset(&registry, &id) {
+        Ok(asset) => asset,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(StatusCode::NOT_FOUND, &format!("{e}"));
+        }
+    };
+
+    let bytes = match std::fs::read(&asset.path) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            active_gauge.dec();
+            duration_hist.observe(timer.elapsed().as_secs_f64());
+            return error_response(
+                StatusCode::NOT_FOUND,
+                &format!("font file not readable: {e}"),
+            );
+        }
+    };
+
+    let mime = mime_guess::from_path(&asset.file_name)
+        .first_or_octet_stream()
+        .to_string();
+    let mut resp = Response::new(axum::body::Body::from(bytes));
+    *resp.status_mut() = StatusCode::OK;
+    if let Ok(val) = HeaderValue::from_str(&mime) {
+        resp.headers_mut().insert("content-type", val);
+    }
+    resp.headers_mut().insert(
+        "cache-control",
+        HeaderValue::from_static("public, max-age=3600"),
+    );
     active_gauge.dec();
     duration_hist.observe(timer.elapsed().as_secs_f64());
     resp

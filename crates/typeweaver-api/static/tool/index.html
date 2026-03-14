@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TypeWeaver Tool | Instant Stress Board</title>
+<title>TypeWeaver Tool | Evidence Wall</title>
 <meta
   name="description"
-  content="Pick a starter font, see four built-in phrases across visible stress states, and generate a JSON report card."
+  content="TypeWeaver shows a chosen font through automatic stress scenes for tiny text, low contrast, blur, confusable glyphs, dense UI, and dark mode."
 >
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
-  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
   rel="stylesheet"
 >
 <link rel="stylesheet" href="/tool.css">
@@ -25,64 +25,77 @@
       <span>TypeWeaver</span>
     </a>
     <div class="topbar-copy">
-      <span class="eyebrow">Playground</span>
-      <p>Pick a font. The stress board is already live.</p>
+      <span class="eyebrow">Evidence wall</span>
+      <strong id="currentFontLabel">Roboto</strong>
     </div>
-    <a class="ghost-link" href="/">Back to homepage</a>
+    <div class="topbar-actions">
+      <button class="secondary-button" id="refreshRegistryBtn">Refresh Library</button>
+      <a class="ghost-link" href="/">Home</a>
+    </div>
   </header>
 
-  <main class="tool-layout">
-    <aside class="control-column">
-      <section class="panel intro-panel">
-        <span class="eyebrow">Instant compare</span>
-        <h1>Pick a font. See every key phrase under pressure.</h1>
-        <p>
-          Four specimen phrases and the main stress states are visible from the start.
-          Upload and custom text stay secondary.
-        </p>
-      </section>
-
-      <section class="panel" id="starter-panel">
-        <div class="panel-head">
-          <div>
-            <span class="section-kicker">Primary</span>
-            <h2>Starter fonts</h2>
-            <p>Use the default or swap to another Google font.</p>
-          </div>
-        </div>
+  <main class="tool-main">
+    <section class="panel hero-panel">
+      <div class="hero-copy">
+        <span class="section-kicker">Automatic stress lab</span>
+        <h1 id="heroTitle">Roboto under pressure.</h1>
         <div class="starter-grid" id="starterGrid"></div>
-      </section>
+      </div>
 
-      <section class="panel secondary-panel" id="upload">
-        <div class="panel-head">
+      <div class="hero-side">
+        <div class="lab-summary" id="labSummary"></div>
+        <button class="primary-button" id="generateReportBtn">Generate JSON report</button>
+        <div class="inline-note strong" id="runStatus">Ready.</div>
+      </div>
+    </section>
+
+    <section class="panel evidence-panel">
+      <div class="panel-head compact">
+        <div>
+          <span class="section-kicker">Stress wall</span>
+          <h2>Failure modes stay on screen.</h2>
+        </div>
+      </div>
+      <div class="evidence-wall" id="evidenceWall"></div>
+    </section>
+
+    <section class="secondary-grid">
+      <section class="panel optional-panel">
+        <div class="panel-head slim">
           <div>
             <span class="section-kicker">Optional</span>
-            <h2>Custom text and upload</h2>
-            <p>Add one extra phrase or preview a local font when needed.</p>
+            <h2>Custom line</h2>
           </div>
         </div>
-
-        <label class="textarea-wrap compact">
-          <span>Custom phrase</span>
+        <label class="textarea-wrap">
+          <span>Your text</span>
           <textarea
             id="customPhraseInput"
             rows="3"
-            placeholder="Add one more phrase to the board."
+            placeholder="Adds one more specimen card."
           ></textarea>
         </label>
-        <div class="inline-note">Built-in phrases stay visible.</div>
+      </section>
+
+      <section class="panel optional-panel" id="upload">
+        <div class="panel-head slim">
+          <div>
+            <span class="section-kicker">Optional</span>
+            <h2>Upload</h2>
+          </div>
+        </div>
 
         <label class="upload-drop">
           <input type="file" id="fileInput" accept=".ttf,.otf,.woff,.woff2">
           <span class="upload-title" id="uploadTitle">Choose a local font file</span>
-          <span class="upload-subtitle">Preview it instantly, then upload it into the registry only if you want it benchable.</span>
+          <span class="upload-subtitle">Preview first. Ingest only if you want it benchable.</span>
         </label>
 
         <div class="upload-controls">
           <label>
             Declared license
             <select id="licenseSelect">
-              <option value="unknown">Unknown or no sidecar</option>
+              <option value="unknown">Unknown</option>
               <option value="MIT License">MIT</option>
               <option value="Apache License Version 2.0">Apache-2.0</option>
               <option value="CC0">CC0</option>
@@ -92,54 +105,37 @@
           <button class="secondary-button" id="uploadBtn" disabled>Upload to registry</button>
         </div>
 
-        <div class="inline-note" id="uploadMsg">No local font selected yet.</div>
-      </section>
-    </aside>
-
-    <section class="stage-column">
-      <section class="panel stage-panel">
-        <div class="panel-head">
-          <div>
-            <span class="section-kicker">Stress board</span>
-            <h2>Four phrases. Four conditions. No hidden setup.</h2>
-            <p>The board updates as soon as you change the font or add a custom line.</p>
-          </div>
-        </div>
-
-        <div class="session-strip" id="sessionSummary"></div>
-        <div class="condition-legend" id="conditionLegend"></div>
-        <div class="phrase-board" id="phraseBoard"></div>
+        <div class="inline-note" id="uploadMsg">No local font selected.</div>
       </section>
 
       <section class="panel report-panel">
-        <div class="panel-head">
+        <div class="panel-head slim">
           <div>
-            <span class="section-kicker">Registry + report</span>
-            <h2>Generate the JSON report</h2>
-            <p>Use the current font and choose which benchmark profile to emit.</p>
+            <span class="section-kicker">JSON</span>
+            <h2>Report</h2>
           </div>
-          <button class="secondary-button" id="refreshRegistryBtn">Refresh library</button>
         </div>
 
         <div class="profile-grid" id="reportProfileGrid"></div>
 
-        <div class="report-actions">
-          <button class="primary-button" id="generateReportBtn">Generate JSON report</button>
-          <div class="inline-note strong" id="runStatus">Ready. The board updates automatically.</div>
-        </div>
-
-        <div class="registry-list" id="registryList">
-          <div class="empty-state">Loading registry...</div>
-        </div>
-
-        <div class="empty-state" id="reportEmpty">
-          Generate a report to see the benchmark metrics and JSON output here.
-        </div>
+        <div class="empty-state" id="reportEmpty">No report yet.</div>
 
         <div class="report-view" id="reportView" hidden>
           <div class="metrics-grid" id="metricGrid"></div>
           <div class="story-card" id="reportStory"></div>
           <pre class="json-box" id="reportJson"></pre>
+        </div>
+      </section>
+
+      <section class="panel library-panel">
+        <div class="panel-head slim">
+          <div>
+            <span class="section-kicker">Library</span>
+            <h2>Registry</h2>
+          </div>
+        </div>
+        <div class="registry-list" id="registryList">
+          <div class="empty-state">Loading registry...</div>
         </div>
       </section>
     </section>

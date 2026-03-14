@@ -5,7 +5,6 @@ const STARTER_FONTS = [
     family: "Roboto",
     familyQuery: "Roboto:wght@400;700",
     fallback: "system-ui, sans-serif",
-    description: "Neutral default for product UI.",
     uploadFileName: "Roboto-Regular.ttf",
     licenseText: "Apache License Version 2.0",
   },
@@ -15,7 +14,6 @@ const STARTER_FONTS = [
     family: "Roboto Condensed",
     familyQuery: "Roboto+Condensed:wght@400;700",
     fallback: "\"Arial Narrow\", sans-serif",
-    description: "Tighter read for dense navigation.",
     uploadFileName: "RobotoCondensed-Regular.ttf",
     licenseText: "Apache License Version 2.0",
   },
@@ -25,135 +23,38 @@ const STARTER_FONTS = [
     family: "Roboto Slab",
     familyQuery: "Roboto+Slab:wght@400;700",
     fallback: "Georgia, serif",
-    description: "Stronger serif rhythm for longer text.",
     uploadFileName: "RobotoSlab-Regular.ttf",
     licenseText: "Apache License Version 2.0",
-  },
-];
-
-const BUILT_IN_PHRASES = [
-  {
-    id: "hero",
-    label: "Launch line",
-    note: "Hero message",
-    text: "Pick a font. Break it on purpose. See if it survives.",
-  },
-  {
-    id: "checkout",
-    label: "Dashboard numerals",
-    note: "Numbers, dates, and slashes",
-    text: "Order 1001 ships to 10 I/O labs on 05/18 at 8:15 PM.",
-  },
-  {
-    id: "confusion",
-    label: "Confusion pairs",
-    note: "Shape collisions",
-    text: "O0 I l 1 S5 B8 rn m cl d",
-  },
-  {
-    id: "dense",
-    label: "Dense mobile copy",
-    note: "Small interface reading",
-    text: "Returns, refunds, and receipts should stay legible when contrast falls, spacing tightens, and the screen gets less forgiving.",
   },
 ];
 
 const SCENARIOS = {
   web_light_default: {
     title: "Web light default",
-    description: "Balanced reading on a bright web surface.",
-    note: "Baseline approval state.",
-    mode: "light",
+    short: "bright · roomy",
   },
   mobile_dark_low_contrast: {
     title: "Mobile dark low contrast",
-    description: "Smaller text on a darker, lower-contrast UI.",
-    note: "Closer to the state where trust starts to slip.",
-    mode: "night",
+    short: "dim · tight",
   },
 };
-
-const PRESETS = {
-  balanced: {
-    displaySize: "clamp(2rem, 3vw, 3.05rem)",
-    letterSpacing: "-0.05em",
-    filter: "none",
-    opacity: "1",
-    scaleX: "1",
-  },
-  contrast_loss: {
-    displaySize: "clamp(1.92rem, 2.8vw, 2.7rem)",
-    letterSpacing: "-0.045em",
-    filter: "none",
-    opacity: "0.74",
-    scaleX: "1",
-  },
-  compression: {
-    displaySize: "clamp(1.84rem, 2.7vw, 2.55rem)",
-    letterSpacing: "-0.055em",
-    filter: "none",
-    opacity: "0.92",
-    scaleX: "0.97",
-  },
-  blur: {
-    displaySize: "clamp(1.88rem, 2.7vw, 2.58rem)",
-    letterSpacing: "-0.048em",
-    filter: "blur(0.45px)",
-    opacity: "0.88",
-    scaleX: "1",
-  },
-};
-
-const STRESS_CONDITIONS = [
-  {
-    id: "reference",
-    title: "Reference",
-    summary: "Web light",
-    scenario: "web_light_default",
-    preset: "balanced",
-    note: "Clean baseline.",
-  },
-  {
-    id: "contrast_drop",
-    title: "Contrast drop",
-    summary: "Lower contrast",
-    scenario: "web_light_default",
-    preset: "contrast_loss",
-    note: "Edges weaken first.",
-  },
-  {
-    id: "compression",
-    title: "Compression",
-    summary: "Dense UI",
-    scenario: "web_light_default",
-    preset: "compression",
-    note: "Spacing gets tighter.",
-  },
-  {
-    id: "mobile_dark",
-    title: "Mobile dark",
-    summary: "Small and dim",
-    scenario: "mobile_dark_low_contrast",
-    preset: "blur",
-    note: "Dark, softer, less forgiving.",
-  },
-];
 
 const SCORE_NARRATIVES = [
-  { limit: 0.85, text: "Strong result. The font stays steady in the selected profile." },
-  { limit: 0.65, text: "Good overall, but pressure is starting to show." },
-  { limit: 0.4, text: "Mixed result. Expect visible weakness in this setting." },
-  { limit: 0, text: "Fragile result. This environment exposes real readability problems." },
+  { limit: 0.85, text: "Strong result. The font holds the selected profile." },
+  { limit: 0.65, text: "Good overall. Pressure is visible but controlled." },
+  { limit: 0.4, text: "Mixed result. Expect visible failure points." },
+  { limit: 0, text: "Fragile result. The profile exposes real readability problems." },
 ];
 
 const BENCH_CORPUS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:'\\\",.<>/?\\\\|`~ O/0 I/l/1 S/5 B/8 rn/m cl/d";
 
 const starterGrid = document.getElementById("starterGrid");
+const currentFontLabel = document.getElementById("currentFontLabel");
+const heroTitle = document.getElementById("heroTitle");
+const labSummary = document.getElementById("labSummary");
+const evidenceWall = document.getElementById("evidenceWall");
 const customPhraseInput = document.getElementById("customPhraseInput");
-const sessionSummary = document.getElementById("sessionSummary");
-const conditionLegend = document.getElementById("conditionLegend");
-const phraseBoard = document.getElementById("phraseBoard");
 const reportProfileGrid = document.getElementById("reportProfileGrid");
 const uploadTitle = document.getElementById("uploadTitle");
 const fileInput = document.getElementById("fileInput");
@@ -185,6 +86,8 @@ const state = {
   pendingUpload: null,
   uploadPreviewUrl: null,
   uploadStyleNode: null,
+  registryStyleNode: null,
+  registryPreviewAssetId: null,
   lastReport: null,
   lastReportProfile: null,
 };
@@ -210,22 +113,17 @@ function findStarter(starterId) {
   return STARTER_FONTS.find((starter) => starter.id === starterId);
 }
 
-function currentPhrases() {
-  const phrases = BUILT_IN_PHRASES.slice();
-  const custom = customPhraseInput.value.trim();
-  if (custom) {
-    phrases.unshift({
-      id: "custom",
-      label: "Custom",
-      note: "Your extra line",
-      text: custom,
-    });
-  }
-  return phrases;
-}
-
 function starterStylesheetId(starter) {
   return `starter-style-${starter.id}`;
+}
+
+function fontStyle(extra = "") {
+  const previewFont = state.selectedSource.previewFont || "system-ui, sans-serif";
+  return `font-family:${previewFont};${extra}`;
+}
+
+function currentCustomPhrase() {
+  return customPhraseInput.value.trim();
 }
 
 async function ensureStarterFontLoaded(starter) {
@@ -277,6 +175,39 @@ async function fetchStarterFontBlob(starter) {
   return fontResponse.blob();
 }
 
+async function ensureRegistryAssetLoaded(asset) {
+  const family = `TypeWeaverRegistry-${asset.id}`;
+  if (state.registryPreviewAssetId !== asset.id) {
+    if (state.registryStyleNode) {
+      state.registryStyleNode.remove();
+    }
+
+    state.registryStyleNode = document.createElement("style");
+    state.registryStyleNode.textContent = `
+      @font-face {
+        font-family: "${family}";
+        src: url("/api/fonts/${asset.id}/file");
+        font-display: swap;
+      }
+    `;
+    document.head.appendChild(state.registryStyleNode);
+    state.registryPreviewAssetId = asset.id;
+  }
+
+  if (document.fonts && document.fonts.load) {
+    try {
+      await Promise.all([
+        document.fonts.load(`400 24px "${family}"`),
+        document.fonts.load(`700 32px "${family}"`),
+      ]);
+    } catch (_error) {
+      // Best effort only.
+    }
+  }
+
+  return `"${family}", system-ui, sans-serif`;
+}
+
 function findRegistryMatchByFileName(fileName) {
   return state.registry.find((asset) => asset.file_name === fileName) || null;
 }
@@ -297,37 +228,6 @@ function setSelectedSource(nextSource, statusMessage) {
   runStatus.textContent = statusMessage;
 }
 
-function sampleFontSize(text, condition) {
-  const preset = PRESETS[condition.preset];
-  const length = text.length;
-  if (length > 120) {
-    return "clamp(0.98rem, 1.35vw, 1.18rem)";
-  }
-  if (length > 90) {
-    return "clamp(1.08rem, 1.55vw, 1.34rem)";
-  }
-  if (length > 64) {
-    return "clamp(1.22rem, 1.9vw, 1.6rem)";
-  }
-  if (length > 40) {
-    return "clamp(1.45rem, 2.35vw, 1.95rem)";
-  }
-  return preset.displaySize;
-}
-
-function sampleStyle(text, condition) {
-  const preset = PRESETS[condition.preset];
-  const previewFont = state.selectedSource.previewFont || "system-ui, sans-serif";
-  return [
-    `font-family:${previewFont}`,
-    `font-size:${sampleFontSize(text, condition)}`,
-    `letter-spacing:${preset.letterSpacing}`,
-    `opacity:${preset.opacity}`,
-    `filter:${preset.filter}`,
-    `transform:scaleX(${preset.scaleX})`,
-  ].join(";");
-}
-
 function renderStarterGrid() {
   starterGrid.innerHTML = STARTER_FONTS.map((starter) => {
     const selected =
@@ -335,11 +235,9 @@ function renderStarterGrid() {
       (state.selectedSource.asset && state.selectedSource.asset.file_name === starter.uploadFileName);
     return `
       <button class="starter-card ${selected ? "is-selected" : ""}" data-starter="${starter.id}">
-        <div class="starter-swatch" style="font-family:'${starter.family}', ${starter.fallback};">
-          <span class="starter-name">${starter.label}</span>
-          <p>${starter.description}</p>
-        </div>
-        <span class="source-tag">Google Fonts</span>
+        <div class="starter-swatch" style="font-family:'${starter.family}', ${starter.fallback};">Aa 01 rn</div>
+        <strong>${starter.label}</strong>
+        <span>${starter.family}</span>
       </button>
     `;
   }).join("");
@@ -358,82 +256,312 @@ function renderStarterGrid() {
           detail: "Google Fonts starter",
           asset: findRegistryMatchByFileName(starter.uploadFileName),
         },
-        `Showing ${starter.label} across the full stress board.`
+        `Showing ${starter.label} across the stress wall.`
       );
       renderAll();
     });
   });
 }
 
-function renderSessionSummary() {
-  const phrases = currentPhrases();
-  sessionSummary.innerHTML = `
-    <div class="session-item">
-      <strong>Font</strong>
-      <span>${escapeHtml(state.selectedSource.label)}</span>
+function renderHeroMeta() {
+  currentFontLabel.textContent = state.selectedSource.label;
+  heroTitle.textContent = `${state.selectedSource.label} under pressure.`;
+  const custom = currentCustomPhrase();
+  labSummary.innerHTML = `
+    <div class="summary-card">
+      <strong>${escapeHtml(state.selectedSource.label)}</strong>
+      <span>font</span>
     </div>
-    <div class="session-item">
-      <strong>Source</strong>
-      <span>${escapeHtml(state.selectedSource.detail)}</span>
+    <div class="summary-card">
+      <strong>${escapeHtml(state.selectedSource.detail)}</strong>
+      <span>source</span>
     </div>
-    <div class="session-item">
-      <strong>Phrases</strong>
-      <span>${phrases.length} visible</span>
+    <div class="summary-card">
+      <strong>6 automatic</strong>
+      <span>stress scenes</span>
     </div>
-    <div class="session-item">
-      <strong>Conditions</strong>
-      <span>${STRESS_CONDITIONS.length} always on</span>
+    <div class="summary-card">
+      <strong>${custom ? "4 built-in + 1 custom" : "4 built-in"}</strong>
+      <span>specimen phrases</span>
     </div>
   `;
 }
 
-function renderConditionLegend() {
-  conditionLegend.innerHTML = STRESS_CONDITIONS.map((condition) => `
-    <article class="legend-card">
-      <strong>${condition.title}</strong>
-      <span>${condition.summary}</span>
-    </article>
-  `).join("");
-}
-
-function renderPhraseBoard() {
-  phraseBoard.innerHTML = currentPhrases().map((phrase) => `
-    <section class="phrase-row">
-      <div class="phrase-head">
-        <div class="phrase-copy">
-          <span class="phrase-tag">${escapeHtml(phrase.label)}</span>
-          <p>${escapeHtml(phrase.note)}</p>
+function renderLabCard({
+  title,
+  detail,
+  beforeLabel,
+  afterLabel,
+  beforeClass,
+  afterClass,
+  beforeContent,
+  afterContent,
+}) {
+  return `
+    <article class="lab-card">
+      <div class="lab-card-head">
+        <div>
+          <span class="lab-kicker">${escapeHtml(title)}</span>
+          <strong>${escapeHtml(detail)}</strong>
         </div>
       </div>
-      <div class="specimen-grid">
-        ${STRESS_CONDITIONS.map((condition) => `
-          <article class="specimen-card ${condition.id}">
-            <div class="specimen-meta">
-              <strong>${condition.title}</strong>
-              <span>${condition.summary}</span>
-            </div>
-            <p class="specimen-display" style="${sampleStyle(phrase.text, condition)}">${escapeHtml(phrase.text)}</p>
-            <p class="specimen-note">${condition.note}</p>
-          </article>
-        `).join("")}
+      <div class="comparison-grid">
+        <section class="scene-card ${beforeClass}">
+          <span class="scene-label">${escapeHtml(beforeLabel)}</span>
+          ${beforeContent}
+        </section>
+        <section class="scene-card ${afterClass}">
+          <span class="scene-label">${escapeHtml(afterLabel)}</span>
+          ${afterContent}
+        </section>
       </div>
-    </section>
-  `).join("");
+    </article>
+  `;
+}
+
+function renderTinyCase() {
+  const rows = [
+    ["Order 1001", "8:15 PM"],
+    ["Pass O0", "I l 1"],
+    ["10 I/O labs", "Ready"],
+  ];
+  const buildRows = () =>
+    rows
+      .map(
+        ([left, right]) => `
+          <div class="mini-ui-row">
+            <span>${escapeHtml(left)}</span>
+            <strong>${escapeHtml(right)}</strong>
+          </div>
+        `
+      )
+      .join("");
+
+  return renderLabCard({
+    title: "Tiny UI",
+    detail: "numbers · dates · passcodes",
+    beforeLabel: "clear",
+    afterLabel: "11px",
+    beforeClass: "is-paper",
+    afterClass: "is-sand",
+    beforeContent: `<div class="mini-ui" style="${fontStyle()}">${buildRows()}</div>`,
+    afterContent: `<div class="mini-ui is-stress" style="${fontStyle()}">${buildRows()}</div>`,
+  });
+}
+
+function renderContrastCase() {
+  const text = "Order 1001 ships to 10 I/O labs.";
+  const subtle = "1001 · 05/18 · O0 · I l 1";
+  return renderLabCard({
+    title: "Low contrast",
+    detail: "edges fade first",
+    beforeLabel: "clear",
+    afterLabel: "washed",
+    beforeClass: "is-paper",
+    afterClass: "is-sand",
+    beforeContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample">${escapeHtml(text)}</p>
+        <span class="scene-subtle">${escapeHtml(subtle)}</span>
+      </div>
+    `,
+    afterContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample is-fade">${escapeHtml(text)}</p>
+        <span class="scene-subtle">${escapeHtml(subtle)}</span>
+      </div>
+    `,
+  });
+}
+
+function renderBlurCase() {
+  const text = "Returns, refunds, receipts.";
+  const subtle = "rn / m · cl / d · 8B / S5";
+  return renderLabCard({
+    title: "Blur",
+    detail: "soft rendering",
+    beforeLabel: "sharp",
+    afterLabel: "blurred",
+    beforeClass: "is-paper",
+    afterClass: "is-sand",
+    beforeContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample">${escapeHtml(text)}</p>
+        <span class="scene-subtle">${escapeHtml(subtle)}</span>
+      </div>
+    `,
+    afterContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample is-blur">${escapeHtml(text)}</p>
+        <span class="scene-subtle">${escapeHtml(subtle)}</span>
+      </div>
+    `,
+  });
+}
+
+function renderConfusableCase() {
+  const pairs = ["I l 1", "O 0", "rn m", "cl d", "S 5", "B 8"];
+  return renderLabCard({
+    title: "Confusables",
+    detail: "I l 1 · O 0 · rn m",
+    beforeLabel: "spaced",
+    afterLabel: "squeezed",
+    beforeClass: "is-paper",
+    afterClass: "is-sand",
+    beforeContent: `
+      <div class="pair-grid" style="${fontStyle()}">
+        ${pairs.map((pair) => `<div class="pair-cell">${escapeHtml(pair)}</div>`).join("")}
+      </div>
+    `,
+    afterContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="pair-line is-squeezed" style="${fontStyle("filter:blur(0.45px); opacity:0.78; transform:scaleX(0.96); transform-origin:left center;")}">Il1 O0 rnm cld S5 B8</p>
+        <span class="scene-subtle">tight + dim</span>
+      </div>
+    `,
+  });
+}
+
+function renderDenseCase() {
+  const roomyRows = [
+    ["Queue", "12"],
+    ["Invoice 105", "Ready"],
+    ["Gate C12", "10:31 PM"],
+  ];
+  const stressRows = [
+    ["Queue 12", "Ready"],
+    ["Invoice 105", "O0"],
+    ["Refunds", "I l 1"],
+    ["Gate C12", "10:31 PM"],
+    ["rn / m", "cl / d"],
+  ];
+  return renderLabCard({
+    title: "Dense UI",
+    detail: "crowded interface",
+    beforeLabel: "roomy",
+    afterLabel: "packed",
+    beforeClass: "is-paper",
+    afterClass: "is-sand",
+    beforeContent: `
+      <div class="dense-board" style="${fontStyle()}">
+        ${roomyRows
+          .map(
+            ([left, right]) => `
+              <div class="dense-row">
+                <span>${escapeHtml(left)}</span>
+                <span>${escapeHtml(right)}</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `,
+    afterContent: `
+      <div class="dense-board is-stress" style="${fontStyle()}">
+        ${stressRows
+          .map(
+            ([left, right]) => `
+              <div class="dense-row">
+                <span>${escapeHtml(left)}</span>
+                <span>${escapeHtml(right)}</span>
+              </div>
+            `
+          )
+          .join("")}
+        <div class="dense-row is-crowded">
+          <span>Queue 12 / Invoice 105 / Gate C12 / O0 / rn m / 10:31 PM</span>
+        </div>
+      </div>
+    `,
+  });
+}
+
+function renderDarkCase() {
+  const messages = [
+    ["Returns", "Refunds, receipts, approvals."],
+    ["Gate C12", "Boarding at 10:31 PM."],
+    ["Order 1001", "10 I/O labs ready."],
+  ];
+  const buildMessages = () =>
+    messages
+      .map(
+        ([title, text]) => `
+          <div class="message-card">
+            <strong>${escapeHtml(title)}</strong>
+            <span>${escapeHtml(text)}</span>
+          </div>
+        `
+      )
+      .join("");
+
+  return renderLabCard({
+    title: "Dark mode",
+    detail: "dim screen · smaller type",
+    beforeLabel: "light",
+    afterLabel: "dim dark",
+    beforeClass: "is-paper",
+    afterClass: "is-night",
+    beforeContent: `<div class="message-stack" style="${fontStyle()}">${buildMessages()}</div>`,
+    afterContent: `<div class="message-stack is-dark" style="${fontStyle("font-size:0.92em;")}">${buildMessages()}</div>`,
+  });
+}
+
+function renderCustomCase(text) {
+  return renderLabCard({
+    title: "Custom line",
+    detail: "your phrase",
+    beforeLabel: "clear",
+    afterLabel: "stress",
+    beforeClass: "is-paper",
+    afterClass: "is-night",
+    beforeContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample">${escapeHtml(text)}</p>
+        <span class="scene-subtle">custom</span>
+      </div>
+    `,
+    afterContent: `
+      <div class="phrase-stack" style="${fontStyle()}">
+        <p class="phrase-sample is-fade is-blur is-tight">${escapeHtml(text)}</p>
+        <span class="scene-subtle">tiny + dim + blur</span>
+      </div>
+    `,
+  });
+}
+
+function renderEvidenceWall() {
+  const cards = [
+    renderTinyCase(),
+    renderContrastCase(),
+    renderBlurCase(),
+    renderConfusableCase(),
+    renderDenseCase(),
+    renderDarkCase(),
+  ];
+  const custom = currentCustomPhrase();
+  if (custom) {
+    cards.push(renderCustomCase(custom));
+  }
+  evidenceWall.innerHTML = cards.join("");
 }
 
 function renderReportProfileGrid() {
-  reportProfileGrid.innerHTML = Object.entries(SCENARIOS).map(([id, scenario]) => `
-    <button class="profile-card ${state.selectedReportProfile === id ? "is-selected" : ""}" data-report-profile="${id}">
-      <strong>${scenario.title}</strong>
-      <p>${scenario.description}</p>
-    </button>
-  `).join("");
+  reportProfileGrid.innerHTML = Object.entries(SCENARIOS)
+    .map(
+      ([id, scenario]) => `
+        <button class="profile-card ${state.selectedReportProfile === id ? "is-selected" : ""}" data-report-profile="${id}">
+          <strong>${escapeHtml(id)}</strong>
+          <span>${escapeHtml(scenario.short)}</span>
+        </button>
+      `
+    )
+    .join("");
 
   reportProfileGrid.querySelectorAll("[data-report-profile]").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedReportProfile = button.dataset.reportProfile;
       clearReport();
-      runStatus.textContent = `Report profile set to ${SCENARIOS[state.selectedReportProfile].title}.`;
+      runStatus.textContent = `Report profile set to ${state.selectedReportProfile}.`;
       renderAll();
     });
   });
@@ -441,53 +569,65 @@ function renderReportProfileGrid() {
 
 function renderRegistry() {
   if (!state.registry.length) {
-    registryList.innerHTML = `<div class="empty-state">Registry is empty. Start with a starter font or upload one.</div>`;
+    registryList.innerHTML = `<div class="empty-state">Registry is empty.</div>`;
     return;
   }
 
-  registryList.innerHTML = state.registry.map((asset) => {
-    const selectedAssetId = state.selectedSource.asset ? state.selectedSource.asset.id : "";
-    const isSelected = selectedAssetId === asset.id;
-    const title = escapeHtml(asset.family_name || asset.file_name);
-    const fileName = escapeHtml(asset.file_name);
-    return `
-      <article class="registry-card ${isSelected ? "is-selected" : ""}">
-        <div>
-          <div class="registry-title">${title}</div>
-          <p class="registry-meta">${fileName}</p>
-          <p class="registry-meta">${escapeHtml(asset.license_normalized)} · ${escapeHtml(asset.status)}</p>
-        </div>
-        <div class="registry-actions">
-          <span class="status-pill ${asset.status}">${titleCaseStatus(asset.status)}</span>
-          <button class="secondary-button" data-use-asset="${asset.id}">Use</button>
-        </div>
-      </article>
-    `;
-  }).join("");
+  registryList.innerHTML = state.registry
+    .map((asset) => {
+      const selectedAssetId = state.selectedSource.asset ? state.selectedSource.asset.id : "";
+      const isSelected = selectedAssetId === asset.id;
+      const title = escapeHtml(asset.family_name || asset.file_name);
+      const fileName = escapeHtml(asset.file_name);
+      return `
+        <article class="registry-card ${isSelected ? "is-selected" : ""}">
+          <div>
+            <div class="registry-title">${title}</div>
+            <p class="registry-meta">${fileName}</p>
+            <p class="registry-meta">${escapeHtml(asset.license_normalized)} · ${escapeHtml(asset.status)}</p>
+          </div>
+          <div class="registry-actions">
+            <span class="status-pill ${asset.status}">${titleCaseStatus(asset.status)}</span>
+            <button class="secondary-button" data-use-asset="${asset.id}">Use</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 
   registryList.querySelectorAll("[data-use-asset]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const asset = state.registry.find((entry) => entry.id === button.dataset.useAsset);
       if (!asset) {
         return;
       }
 
       const starter = STARTER_FONTS.find((entry) => entry.uploadFileName === asset.file_name);
+      let previewFont = "system-ui, sans-serif";
+
+      if (starter) {
+        state.selectedStarterId = starter.id;
+        await ensureStarterFontLoaded(starter);
+        previewFont = `"${starter.family}", ${starter.fallback}`;
+      } else {
+        runStatus.textContent = `Loading ${asset.family_name || asset.file_name} from the registry...`;
+        try {
+          previewFont = await ensureRegistryAssetLoaded(asset);
+        } catch (error) {
+          runStatus.textContent = `Preview fallback for ${asset.family_name || asset.file_name}: ${error.message}`;
+        }
+      }
+
       setSelectedSource(
         {
           type: "registry",
           label: asset.family_name || asset.file_name,
           detail: "Existing registry asset",
           asset,
-          previewFont: starter ? `"${starter.family}", ${starter.fallback}` : "system-ui, sans-serif",
+          previewFont,
         },
         `Showing ${asset.family_name || asset.file_name} from the registry.`
       );
-
-      if (starter) {
-        state.selectedStarterId = starter.id;
-        ensureStarterFontLoaded(starter).catch(() => {});
-      }
 
       renderAll();
     });
@@ -500,15 +640,15 @@ function renderReport(report) {
   metricGrid.innerHTML = `
     <article class="metric-card">
       <strong>${scorePercent}</strong>
-      <span>Score</span>
+      <span>score</span>
     </article>
     <article class="metric-card">
       <strong>${coveragePercent}</strong>
-      <span>Estimated coverage</span>
+      <span>coverage</span>
     </article>
     <article class="metric-card">
       <strong>${report.measurements.line_density.toFixed(1)}</strong>
-      <span>Line density</span>
+      <span>density</span>
     </article>
   `;
 
@@ -525,9 +665,8 @@ function renderReport(report) {
 
 function renderAll() {
   renderStarterGrid();
-  renderSessionSummary();
-  renderConditionLegend();
-  renderPhraseBoard();
+  renderHeroMeta();
+  renderEvidenceWall();
   renderReportProfileGrid();
   renderRegistry();
 
@@ -610,7 +749,7 @@ async function uploadPendingFile() {
       previewFont: state.selectedSource.previewFont,
       asset,
     },
-    `Uploaded ${state.pendingUpload.name} and switched the board to it.`
+    `Uploaded ${state.pendingUpload.name} and switched the wall to it.`
   );
 
   renderAll();
@@ -660,7 +799,8 @@ async function runReport() {
   generateReportBtn.disabled = true;
   try {
     const asset = await ensureBenchAsset();
-    runStatus.textContent = `Generating ${SCENARIOS[state.selectedReportProfile].title} report for ${asset.family_name || asset.file_name}...`;
+    runStatus.textContent =
+      `Generating ${SCENARIOS[state.selectedReportProfile].title} report for ${asset.family_name || asset.file_name}...`;
     const response = await fetch(`/api/fonts/${asset.id}/report?profile=${state.selectedReportProfile}`);
     const payload = await response.json();
     if (!response.ok) {
@@ -680,7 +820,7 @@ async function runReport() {
 function updateUploadPreview(file) {
   uploadTitle.textContent = file.name;
   uploadBtn.disabled = false;
-  uploadMsg.textContent = "Previewing the local file. Upload it only if you want it in the registry.";
+  uploadMsg.textContent = "Previewing the local file on the wall.";
 
   if (state.uploadPreviewUrl) {
     URL.revokeObjectURL(state.uploadPreviewUrl);
@@ -710,7 +850,7 @@ function updateUploadPreview(file) {
       previewFont: `"${family}", system-ui, sans-serif`,
       asset: findRegistryMatchByFileName(file.name),
     },
-    `Previewing ${file.name} across the full stress board.`
+    `Previewing ${file.name} across the stress wall.`
   );
   renderAll();
 }
@@ -719,13 +859,13 @@ async function initialize() {
   await ensureStarterFontLoaded(STARTER_FONTS[0]);
   renderAll();
   await refreshRegistry();
-  runStatus.textContent = "Ready. Pick a font or keep the default.";
+  runStatus.textContent = `Showing ${state.selectedSource.label} across 6 stress scenes.`;
 }
 
 customPhraseInput.addEventListener("input", () => {
-  runStatus.textContent = customPhraseInput.value.trim()
-    ? "Custom phrase added to the board."
-    : "Custom phrase removed. Built-ins remain.";
+  runStatus.textContent = currentCustomPhrase()
+    ? "Custom line added to the wall."
+    : `Showing ${state.selectedSource.label} across 6 stress scenes.`;
   renderAll();
 });
 

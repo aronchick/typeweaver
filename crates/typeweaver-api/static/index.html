@@ -6,12 +6,12 @@
 <title>TypeWeaver | Typography Stress Tests</title>
 <meta
   name="description"
-  content="TypeWeaver makes weak typography obvious fast: pick a font, compare fixed phrases across visible stress states, then generate a JSON benchmark report."
+  content="TypeWeaver makes typography failure visible fast with side-by-side stress proofs for tiny text, low contrast, blur, confusable glyphs, density, and dark mode."
 >
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link
-  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
   rel="stylesheet"
 >
 <link rel="stylesheet" href="/home.css">
@@ -23,167 +23,178 @@
       <span class="brand-mark">Tw</span>
       <span>TypeWeaver</span>
     </a>
-    <nav class="topnav">
-      <a href="#why">Why</a>
-      <a href="#how">How</a>
-      <a href="#profiles">Profiles</a>
-      <a class="button ghost" href="/tool">Open Tool</a>
-    </nav>
+    <a class="button" href="/tool">Open Stress Lab</a>
   </header>
 
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow">Typography robustness lab</span>
-        <h1>Pick a font. See it under pressure immediately.</h1>
-        <p class="hero-lede">
-          TypeWeaver opens with four built-in phrases and the main stress states already visible.
-          Start with a known font, compare it fast, then generate the JSON benchmark when it earns the pick.
-        </p>
+        <span class="eyebrow">Evidence-first type checks</span>
+        <h1>See the font fail before you ship it.</h1>
         <div class="hero-actions">
-          <a class="button" href="/tool">Open The Tool</a>
-          <a class="text-link" href="#how">See the loop</a>
+          <a class="button" href="/tool">Open /tool</a>
+          <a class="ghost-button" href="#proof">See Proof</a>
         </div>
-        <div class="hero-stats">
-          <div class="stat-card">
-            <strong>4</strong>
-            <span>built-in phrases, always visible</span>
+        <div class="signal-row">
+          <span>Tiny</span>
+          <span>Low contrast</span>
+          <span>Blur</span>
+          <span>Dense UI</span>
+          <span>Dark mode</span>
+          <span>O0 I l 1 rn m</span>
+        </div>
+      </div>
+
+      <div class="hero-board">
+        <article class="proof-lane">
+          <div class="proof-side proof-clear">
+            <span class="lane-label">Clear</span>
+            <div class="mini-ui">
+              <div class="mini-ui-row">
+                <span>Order 1001</span>
+                <strong>8:15 PM</strong>
+              </div>
+              <div class="mini-ui-row">
+                <span>O0 passcode</span>
+                <strong>I l 1</strong>
+              </div>
+              <div class="mini-ui-row">
+                <span>10 I/O labs</span>
+                <strong>Ready</strong>
+              </div>
+            </div>
           </div>
-          <div class="stat-card">
-            <strong>4</strong>
-            <span>stress states on screen by default</span>
+
+          <div class="proof-side proof-stress proof-tiny">
+            <span class="lane-label">11px</span>
+            <div class="mini-ui is-tight">
+              <div class="mini-ui-row">
+                <span>Order 1001</span>
+                <strong>8:15 PM</strong>
+              </div>
+              <div class="mini-ui-row">
+                <span>O0 passcode</span>
+                <strong>I l 1</strong>
+              </div>
+              <div class="mini-ui-row">
+                <span>10 I/O labs</span>
+                <strong>Ready</strong>
+              </div>
+            </div>
           </div>
-          <div class="stat-card">
-            <strong>2</strong>
-            <span>benchmark profiles ready for JSON output</span>
+        </article>
+
+        <article class="proof-lane">
+          <div class="proof-side proof-clear">
+            <span class="lane-label">Spaced</span>
+            <p class="proof-phrase">I l 1  |  O 0  |  rn m  |  cl d  |  S 5  |  B 8</p>
+          </div>
+
+          <div class="proof-side proof-stress proof-confusable">
+            <span class="lane-label">Squeezed</span>
+            <p class="proof-phrase is-squeezed">Il1 O0 rnm cld S5 B8</p>
+          </div>
+        </article>
+
+        <article class="proof-lane">
+          <div class="proof-side proof-clear">
+            <span class="lane-label">Light</span>
+            <div class="mobile-stack">
+              <div class="mobile-card">
+                <strong>Returns</strong>
+                <span>Refunds, receipts, approvals.</span>
+              </div>
+              <div class="mobile-card">
+                <strong>Gate C12</strong>
+                <span>Boarding at 10:31 PM.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="proof-side proof-dark">
+            <span class="lane-label">Dim dark</span>
+            <div class="mobile-stack is-dark">
+              <div class="mobile-card">
+                <strong>Returns</strong>
+                <span>Refunds, receipts, approvals.</span>
+              </div>
+              <div class="mobile-card">
+                <strong>Gate C12</strong>
+                <span>Boarding at 10:31 PM.</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="proof-grid" id="proof">
+      <article class="proof-card">
+        <div class="proof-card-head">
+          <span class="card-kicker">Low contrast</span>
+          <span class="micro-label">1001 / 10 I/O labs</span>
+        </div>
+        <p class="card-sample card-sample-clear">Order 1001 ships to 10 I/O labs.</p>
+        <p class="card-sample card-sample-fade">Order 1001 ships to 10 I/O labs.</p>
+      </article>
+
+      <article class="proof-card">
+        <div class="proof-card-head">
+          <span class="card-kicker">Blur</span>
+          <span class="micro-label">Refunds / receipts</span>
+        </div>
+        <p class="card-sample card-sample-clear">Returns, refunds, receipts.</p>
+        <p class="card-sample card-sample-blur">Returns, refunds, receipts.</p>
+      </article>
+
+      <article class="proof-card">
+        <div class="proof-card-head">
+          <span class="card-kicker">Dense UI</span>
+          <span class="micro-label">Crowded list</span>
+        </div>
+        <div class="dense-board">
+          <div class="dense-row">
+            <span>Queue</span>
+            <span>12</span>
+            <span>10:31 PM</span>
+          </div>
+          <div class="dense-row">
+            <span>Invoice 105</span>
+            <span>O0</span>
+            <span>Ready</span>
+          </div>
+          <div class="dense-row is-crowded">
+            <span>Invoice 105 / Queue 12 / Gate C12 / O0 / rn m / 10:31 PM</span>
           </div>
         </div>
-      </div>
+      </article>
 
-      <div class="hero-stage card">
-        <div class="stage-topline">
-          <span class="stage-chip">Reference</span>
-          <span class="stage-chip">Contrast drop</span>
-          <span class="stage-chip">Compression</span>
-          <span class="stage-chip warm">Mobile dark</span>
+      <article class="proof-card profile-card">
+        <div class="proof-card-head">
+          <span class="card-kicker">Profiles</span>
+          <span class="micro-label">Built in</span>
         </div>
-
-        <div class="stage-grid">
-          <article class="stage-card reference">
-            <span class="frame-label">Reference</span>
-            <h2>Order 1001 ships to 10 I/O labs.</h2>
-            <p>Clean light-mode approval state.</p>
-          </article>
-
-          <article class="stage-card contrast">
-            <span class="frame-label">Contrast drop</span>
-            <h2>O0 I/l/1 S5 B8</h2>
-            <p>Edges fade and weak structure shows.</p>
-          </article>
-
-          <article class="stage-card compression">
-            <span class="frame-label">Compression</span>
-            <h2>rn / m cl / d</h2>
-            <p>Tighter spacing exposes rhythm problems.</p>
-          </article>
-
-          <article class="stage-card night">
-            <span class="frame-label">Mobile dark</span>
-            <h2>Returns, refunds, and receipts.</h2>
-            <p>Small, dim, and less forgiving.</p>
-          </article>
+        <div class="profile-strip">
+          <div class="profile-pill">
+            <strong>web_light_default</strong>
+            <span>bright / roomy</span>
+          </div>
+          <div class="profile-pill is-dark">
+            <strong>mobile_dark_low_contrast</strong>
+            <span>dim / tight</span>
+          </div>
         </div>
-      </div>
+      </article>
     </section>
 
-    <section class="section" id="why">
-      <div class="section-copy">
-        <span class="eyebrow">Why it exists</span>
-        <h2>Most fonts are still approved in the easiest state.</h2>
-        <p>
-          A clean mockup hides the problems. Real products add density, lower contrast,
-          darker surfaces, and confusion pairs. TypeWeaver keeps those failure modes visible from the start.
-        </p>
+    <section class="cta">
+      <div>
+        <span class="eyebrow">Immediate evidence</span>
+        <h2>Open the wall. Swap the font. Read the damage.</h2>
       </div>
-
-      <div class="proof-grid">
-        <article class="proof-card cold">
-          <span class="card-kicker">What gets approved</span>
-          <h3>Large, bright, generous.</h3>
-          <p>Headline first. Nice screenshot. Plenty of space.</p>
-        </article>
-
-        <article class="proof-card hot">
-          <span class="card-kicker">What users get</span>
-          <h3>Small, dim, crowded.</h3>
-          <p>Numbers, labels, and mixed content under pressure.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="how">
-      <div class="section-copy">
-        <span class="eyebrow">How it works</span>
-        <h2>Keep the loop short.</h2>
-      </div>
-
-      <div class="steps-grid">
-        <article class="step-card">
-          <span class="step-number">01</span>
-          <h3>Pick a starter</h3>
-          <p>Use the default Google font or swap to another known starter.</p>
-        </article>
-        <article class="step-card">
-          <span class="step-number">02</span>
-          <h3>Read the board</h3>
-          <p>See the phrases and stress states together without opening menus.</p>
-        </article>
-        <article class="step-card">
-          <span class="step-number">03</span>
-          <h3>Emit the report</h3>
-          <p>Sync the font into the Rust pipeline and generate JSON when needed.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="profiles">
-      <div class="profiles-grid">
-        <article class="profile-card">
-          <span class="card-kicker">Benchmark profile</span>
-          <h3><code>web_light_default</code></h3>
-          <p>Baseline web reading with strong light-surface contrast.</p>
-        </article>
-        <article class="profile-card">
-          <span class="card-kicker">Benchmark profile</span>
-          <h3><code>mobile_dark_low_contrast</code></h3>
-          <p>Darker UI, smaller text, and less room for weak shapes.</p>
-        </article>
-        <article class="profile-card">
-          <span class="card-kicker">Built-in check</span>
-          <h3>Confusion pairs stay visible.</h3>
-          <p>O/0, I/l/1, S/5, B/8, rn/m, and cl/d are always part of the pass.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="cta card">
-        <div>
-          <span class="eyebrow">Open the tool</span>
-          <h2>Use the default font and start reading the stress board immediately.</h2>
-        </div>
-        <div class="cta-actions">
-          <a class="button" href="/tool">Open The Tool</a>
-          <a class="button ghost" href="/tool#upload">Jump To Upload</a>
-        </div>
-      </div>
+      <a class="button" href="/tool">Open Stress Lab</a>
     </section>
   </main>
-
-  <footer class="footer">
-    <span>TypeWeaver</span>
-    <span>Benchmark typography where it actually starts to fail.</span>
-  </footer>
 </div>
 </body>
 </html>
