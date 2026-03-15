@@ -1288,7 +1288,7 @@ function renderPublicFontResults(fonts) {
           <strong>${escapeHtml(font.family)}</strong>
           <small>${escapeHtml(font.source === "fallback_catalog" ? "Built-in public catalog" : "Google Fonts catalog")}</small>
         </div>
-        <span class="status ${font.declared_license ? "status-approved" : "status-quarantined"}">${escapeHtml(font.category)}</span>
+        <span class="status ${font.declared_license ? "status-approved" : "status-quarantined"}">${escapeHtml(font.declared_license ? "License known" : "License pending")}</span>
       </div>
       <p>${escapeHtml(
         font.declared_license
