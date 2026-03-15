@@ -64,31 +64,31 @@ const FALLBACK_PUBLIC_FONTS: &[FallbackPublicFont] = &[
     FallbackPublicFont {
         family: "Inter",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(0),
     },
     FallbackPublicFont {
         family: "IBM Plex Sans",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(1),
     },
     FallbackPublicFont {
         family: "Source Serif 4",
         category: "Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(2),
     },
     FallbackPublicFont {
         family: "Roboto",
         category: "Sans Serif",
-        declared_license: Some("Apache License Version 2.0"),
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(3),
     },
     FallbackPublicFont {
         family: "Roboto Mono",
         category: "Monospace",
-        declared_license: Some("Apache License Version 2.0"),
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(4),
     },
     FallbackPublicFont {
@@ -100,13 +100,13 @@ const FALLBACK_PUBLIC_FONTS: &[FallbackPublicFont] = &[
     FallbackPublicFont {
         family: "Roboto Condensed",
         category: "Sans Serif",
-        declared_license: Some("Apache License Version 2.0"),
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(6),
     },
     FallbackPublicFont {
         family: "Archivo",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(7),
     },
     FallbackPublicFont {
@@ -130,55 +130,55 @@ const FALLBACK_PUBLIC_FONTS: &[FallbackPublicFont] = &[
     FallbackPublicFont {
         family: "Space Grotesk",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: Some(11),
     },
     FallbackPublicFont {
         family: "Work Sans",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Merriweather",
         category: "Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Lora",
         category: "Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Noto Sans",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Noto Serif",
         category: "Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Fira Sans",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "Manrope",
         category: "Sans Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
     FallbackPublicFont {
         family: "PT Serif",
         category: "Serif",
-        declared_license: None,
+        declared_license: Some("SIL Open Font License, Version 1.1"),
         spotlight_rank: None,
     },
 ];
@@ -614,11 +614,24 @@ mod tests {
     #[test]
     fn parses_google_fonts_metadata_with_xssi_prefix() {
         let fonts = parse_google_fonts_metadata(
-            ")]}'\n{\"familyMetadataList\":[{\"family\":\"Roboto\",\"category\":\"sans-serif\"},{\"family\":\"IBM Plex Sans\",\"category\":\"sans-serif\"}]}"
+            r#")]}'
+{"familyMetadataList":[{"family":"Roboto","category":"sans-serif"},{"family":"IBM Plex Sans","category":"sans-serif"}]}
+"#
         )
         .unwrap();
-        assert!(fonts.iter().any(|font| font.family == "Roboto"));
-        assert!(fonts.iter().any(|font| font.family == "IBM Plex Sans"));
+        let roboto = fonts.iter().find(|font| font.family == "Roboto").unwrap();
+        let plex = fonts
+            .iter()
+            .find(|font| font.family == "IBM Plex Sans")
+            .unwrap();
+        assert_eq!(
+            roboto.declared_license.as_deref(),
+            Some("SIL Open Font License, Version 1.1")
+        );
+        assert_eq!(
+            plex.declared_license.as_deref(),
+            Some("SIL Open Font License, Version 1.1")
+        );
     }
 
     #[test]
