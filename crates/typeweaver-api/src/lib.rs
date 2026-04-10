@@ -12,7 +12,6 @@ use axum::http::request::Parts;
 use axum::http::{HeaderValue, StatusCode};
 use axum::response::Response;
 use axum::routing::{get, post};
-use rust_embed::Embed;
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -27,10 +26,6 @@ use crate::metrics::Metrics;
 use crate::public_fonts::{
     PublicFontCatalog, load_public_font_catalog, resolve_public_font, search_public_font_catalog,
 };
-
-#[derive(Embed)]
-#[folder = "static/"]
-struct StaticAssets;
 
 #[derive(Clone)]
 struct CachedPublicFontCatalog {
@@ -121,7 +116,6 @@ fn app(registry_root: PathBuf) -> Router {
         .route("/api/health", get(handle_healthz))
         .route("/okz", get(handle_okz))
         .route("/varz", get(handle_varz))
-        .fallback(handle_static)
         .with_state(state)
 }
 
@@ -861,70 +855,9 @@ async fn handle_varz(State(state): State<Arc<Mutex<AppState>>>, _auth: ValidToke
     resp
 }
 
-async fn handle_static(
-    State(state): State<Arc<Mutex<AppState>>>,
-    uri: axum::http::Uri,
-) -> Response {
-    {
-        let st = state.lock().await;
-        st.metrics.requests_total.inc();
-        st.metrics
-            .api_calls_total
-            .with_label_values(&["static"])
-            .inc();
-    }
-
-    let path = match resolve_static_path(uri.path()) {
-        Some(path) => path,
-        None => return error_response(StatusCode::NOT_FOUND, "not found"),
-    };
-
-    match StaticAssets::get(&path) {
-        Some(content) => {
-            let mime = mime_guess::from_path(&path)
-                .first_or_octet_stream()
-                .to_string();
-            let mut resp = Response::new(axum::body::Body::from(content.data.to_vec()));
-            *resp.status_mut() = StatusCode::OK;
-            if let Ok(val) = HeaderValue::from_str(&mime) {
-                resp.headers_mut().insert("content-type", val);
-            }
-            resp
-        }
-        None => error_response(StatusCode::NOT_FOUND, "not found"),
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-fn resolve_static_path(request_path: &str) -> Option<String> {
-    let trimmed = request_path.trim_matches('/');
-    let path = if trimmed.is_empty() {
-        "index.html".to_string()
-    } else {
-        trimmed.to_string()
-    };
-
-    if StaticAssets::get(&path).is_some() {
-        return Some(path);
-    }
-
-    if !path.contains('.') {
-        let html = format!("{path}.html");
-        if StaticAssets::get(&html).is_some() {
-            return Some(html);
-        }
-
-        let nested = format!("{path}/index.html");
-        if StaticAssets::get(&nested).is_some() {
-            return Some(nested);
-        }
-    }
-
-    None
-}
 
 async fn cached_public_font_catalog(state: &Arc<Mutex<AppState>>) -> PublicFontCatalog {
     const FRESH_TTL: Duration = Duration::from_secs(30 * 60);
@@ -1082,7 +1015,7 @@ fn get_memory_rss_bytes() -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{infer_font_extension, remote_file_name, resolve_static_path, sanitize_file_name};
+    use super::{infer_font_extension, remote_file_name, sanitize_file_name};
 
     #[test]
     fn sanitizes_remote_file_names() {
@@ -1121,25 +1054,5 @@ mod tests {
         let file_name = remote_file_name(&url, Some("font/ttf")).unwrap();
         assert!(file_name.starts_with("font"));
         assert!(file_name.ends_with(".ttf"));
-    }
-
-    #[test]
-    fn resolves_root_and_prefers_html_over_nested_index_routes() {
-        assert_eq!(resolve_static_path("/"), Some("index.html".to_string()));
-        assert_eq!(resolve_static_path("/tool"), Some("tool.html".to_string()));
-        assert_eq!(resolve_static_path("/tool/"), Some("tool.html".to_string()));
-    }
-
-    #[test]
-    fn leaves_asset_paths_intact() {
-        assert_eq!(
-            resolve_static_path("/tool.css"),
-            Some("tool.css".to_string())
-        );
-    }
-
-    #[test]
-    fn rejects_missing_static_routes() {
-        assert_eq!(resolve_static_path("/missing"), None);
     }
 }

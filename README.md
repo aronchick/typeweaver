@@ -72,6 +72,7 @@ So this is no longer just a sketch. It is an implemented early platform.
 - `crates/typeweaver-bench`: profile benchmark runner and report builder
 - `crates/typeweaver-cli`: CLI entrypoint and `serve` command
 - `crates/typeweaver-api`: Axum API + service layer
+- `frontend/`: static site served by Caddy; talks to the API over same-origin `/api/*`
 - `crates/typeweaver-ocr`: OCR scoring / related analysis work
 
 ## Canonical plan

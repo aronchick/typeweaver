@@ -1,0 +1,326 @@
+TypeWeaver LLM Handoff
+Last updated: 2026-03-11 UTC
+Canonical repo state: commit f147a0fdb1a8d5f78f8129f4f978970557e7d0e6 on master
+
+1. What this project is
+
+TypeWeaver is a typography robustness lab.
+
+The core thesis is:
+- most font tools optimize for ideal mockups
+- TypeWeaver should optimize for how fonts survive reality
+
+The intended long-range product is:
+- ingest fonts
+- evaluate them under hostile conditions
+- explain where they fail
+- compare candidates
+- generate or repair stronger variants
+- eventually export downloadable winning fonts
+
+The current repo is still early-stage. The trustworthy wedge is deterministic evaluation, not unconstrained generation.
+
+2. Product strategy
+
+Do not mix "cool font generation" into the foundation too early.
+
+The correct build order is:
+- evaluation kernel first
+- explainable scoring second
+- deterministic hostile-condition matrix third
+- friendly permutation explorer UI fourth
+- comparison workflow fifth
+- guided repair generation sixth
+- open-ended generation and adversarial optimization later
+
+The product should feel friendly and fun on the surface, but rigorous underneath.
+
+UI principle:
+- approachable, specimen-like, warm, visual
+
+Engine principle:
+- deterministic, explainable, reproducible
+
+3. Scope discipline
+
+Original Phase 1 constraints matter.
+
+Phase 1 allowed:
+- local font ingestion
+- license normalization
+- fixed Latin corpus rendering
+- two benchmark profiles
+- JSON report output
+
+Phase 1 explicitly did not allow:
+- font generation
+- OCR scoring as a core feature
+- URL auditing
+- cloud infrastructure
+- broad website product scope
+
+Important repo reality:
+- the repo already contains more than the original Phase 1 brief allowed, including API/UI and OCR-adjacent code
+- do not let those extra surfaces distract from strengthening the evaluator
+
+4. Current repo shape
+
+Important crates:
+- crates/typeweaver-core
+- crates/typeweaver-registry
+- crates/typeweaver-render
+- crates/typeweaver-bench
+- crates/typeweaver-cli
+- crates/typeweaver-api
+- crates/typeweaver-ocr
+
+Important docs:
+- README.md
+- docs/canonical-plan.md
+- docs/openspec-product.md
+- docs/openspec-implementation-roadmap.md
+- docs/openspec-scoring-model.md
+- docs/openspec-attack-matrix.md
+- docs/codex-task-phase1.md
+
+5. Current status
+
+As of commit f147a0fdb1a8d5f78f8129f4f978970557e7d0e6:
+- cargo test passes
+- the repo is clean and pushed
+- the embedded frontend was redesigned to feel more like a product and less like a terminal console
+
+Frontend change summary:
+- file changed: crates/typeweaver-api/static/index.html
+- new tone: warmer, friendlier, more visual
+- flow: upload -> choose scenario -> select font -> run stress test -> read structured report
+- current UI uses the existing backend report endpoint and presents friendlier summaries
+
+What the frontend is now:
+- a better shell for the current evaluator
+
+What it is not yet:
+- a true permutation explorer with real condition breakdowns
+- a browser/device matrix
+- a generation UI
+
+6. Most important next work
+
+Current top ready issue in beads:
+- typeweaver-amh.1
+- title: Define and implement scoring model v1
+
+This is the next correct task.
+
+It should produce:
+- a stable score schema
+- overall score
+- robustness score
+- distinctiveness score
+- cost score
+- condition breakdown
+- worst-case score
+- top failure summary
+
+This work must align with:
+- docs/openspec-scoring-model.md
+
+And it should be designed so that the next issue can cleanly follow:
+- typeweaver-amh.2
+- Implement deterministic attack matrix v1
+
+7. What to build next in code
+
+The next implementation push should do these things:
+
+A. Introduce a real scenario/scoring model
+- preserve the current two profile names for compatibility
+- internally evolve them toward a richer scenario abstraction
+- do not hardcode more profile-specific bias logic
+
+B. Upgrade report schema
+- move beyond a single top-line score plus notes
+- include structured subscores and failure diagnostics
+- preserve deterministic JSON
+
+C. Keep the UI fed by real evidence
+- do not invent decorative metrics in the backend
+- if a UI card exists, it should correspond to real report fields
+
+D. Leave generation for later
+- guided repair is acceptable after scoring and attack-matrix credibility exist
+- open-ended font generation is not the next step
+
+8. Architectural direction
+
+The correct architecture is:
+
+Layer 1: Registry and provenance
+- ingest files
+- normalize licenses
+- classify approval status
+
+Layer 2: Render and corpus
+- fixed Latin corpus
+- confusion pairs
+- deterministic preview artifacts
+
+Layer 3: Scenario engine
+- conditions such as size, contrast, blur, raster pressure
+- named scenario bundles built from reusable primitives
+
+Layer 4: Scoring engine
+- overall score composed from visible subscores
+- condition-aware output
+- explainable penalties
+
+Layer 5: Product presentation
+- UI and API should surface scenario, score breakdown, and failure explanation
+
+Later layers:
+- comparison frontier
+- repair generation
+- adversarial optimization
+- exportable variants
+
+9. UI guidance
+
+The product should not feel like a compliance dashboard.
+
+Desired qualities:
+- warm and inviting
+- specimen-lab energy
+- easy to understand
+- visually direct
+- a little playful without becoming unserious
+
+Do:
+- use human-readable scenario names
+- emphasize "show me where it breaks"
+- surface worst-case behavior
+- let the user compare environments
+
+Do not:
+- dump raw JSON as the primary experience
+- present everything as admin tables
+- treat the UI as a thin CLI wrapper forever
+
+10. Scoring guidance
+
+Scoring should be:
+- interpretable
+- decomposable
+- target-aware
+- useful for future optimization loops
+
+Likely v1 scoring dimensions:
+- overall_score
+- robustness_score
+- distinctiveness_score
+- cost_score
+- condition_breakdown
+- worst_case_score
+- top_failure_summary
+
+Likely future additions:
+- stability_score
+- machine_readability_score
+- intent_fit_score
+
+Do not hide the mechanism behind a magic number.
+
+11. Attack matrix guidance
+
+The future matrix should be built from reusable deterministic primitives.
+
+Core primitives under consideration:
+- blur
+- low contrast
+- small size
+- raster degradation
+- compression artifacts
+- glare or bloom
+- motion blur
+- camera capture
+- print spread
+- noise overlays
+
+Scenario bundles should represent real environments, not raw toggles.
+
+Examples:
+- web_light_default
+- mobile_dark_low_contrast
+- later: browser/device/display/environment bundles
+
+12. How to work in this repo
+
+Use beads for issue tracking.
+
+Useful commands:
+- bd ready --json
+- bd show <issue-id> --json
+- bd update <issue-id> --claim --json
+- bd create ...
+- bd close <issue-id> --reason "Completed" --json
+
+Important environment note:
+- bd is installed
+- bd uses a Dolt backend
+- the Dolt server may need to be started with: bd dolt start
+
+13. Local setup notes
+
+Tests:
+- cargo test
+
+CLI examples:
+- cargo run -- ingest fixtures/fonts
+- cargo run -- list
+- cargo run -- profiles
+- cargo run -- bench <font-id> --profile web_light_default
+- cargo run -- serve
+
+Default output location:
+- .typeweaver/
+
+14. Approval and autonomy note
+
+On the machine where this repo was last worked:
+- Codex was configured to be broad inside this repo
+- outside this repo, approval falls back to a safer mode
+
+That is machine-local behavior, not repo behavior.
+
+Do not assume another environment has the same agent config.
+
+15. Non-negotiable implementation principles
+
+- Keep deterministic behavior where possible.
+- Prefer explicit data structures over speculative abstraction.
+- Keep modules small and concrete.
+- Prefer simple CLI-first/core-first design.
+- Match UI claims to real engine output.
+- Do not expand scope just because the repo already contains extra crates.
+- Build trust in evaluation before pushing generation.
+
+16. If you are the next agent
+
+Start here:
+1. Read docs/openspec-scoring-model.md
+2. Read docs/openspec-implementation-roadmap.md
+3. Run bd ready --json
+4. Claim typeweaver-amh.1
+5. Inspect crates/typeweaver-core and crates/typeweaver-bench
+6. Design the score schema first
+7. Update tests before broadening UI claims
+
+17. Short version
+
+TypeWeaver should become the place where fonts are tested against reality.
+
+Right now, the next correct move is not "make generation flashy."
+It is:
+- make the scoring model real
+- make hostile-condition evidence real
+- then let the UI show that truth clearly
+

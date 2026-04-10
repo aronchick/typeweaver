@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypeWeaver Tool</title>
+<style>
+  :root {
+    --bg: #f6efe5;
+    --bg-2: #e9ded0;
+    --surface: rgba(255, 251, 245, 0.9);
+    --surface-strong: #fffaf4;
+    --ink: #161515;
+    --muted: #5b5a57;
+    --line: rgba(22, 21, 21, 0.12);
+    --accent: #ff6a3d;
+    --accent-2: #ff8f68;
+    --shadow: 0 22px 64px rgba(63, 37, 18, 0.12);
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --max: 1320px;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--ink);
+    font-family: Inter, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(255, 185, 142, 0.42), transparent 28%),
+      radial-gradient(circle at top right, rgba(120, 177, 168, 0.18), transparent 26%),
+      linear-gradient(180deg, var(--bg), var(--bg-2));
+  }
+
+  .shell {
+    width: min(var(--max), calc(100vw - 28px));
+    margin: 0 auto;
+    padding: 20px 0 64px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 2px 18px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+  }
+
+  .brand-mark {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,106,61,0.16), rgba(80,137,130,0.14));
+    border: 1px solid rgba(22,21,21,0.08);
+    font-family: Georgia, serif;
+    font-size: 24px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .nav-links a,
+  button,
+  .chip,
+  .status,
+  input,
+  select,
+  textarea {
+    border-radius: 999px;
+    font: inherit;
+  }
+
+  .nav-links a,
+  .chip,
+  .status {
+    text-decoration: none;
+    color: var(--ink);
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(22,21,21,0.1);
+    padding: 10px 14px;
+  }
+
+  .hero {
+    padding: 24px;
+  }
+
+  .hero-grid,
+  .main-grid,
+  .reasoning-grid,
+  .preview-grid,
+  .control-grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    align-items: start;
+  }
+
+  .eyebrow,
+  .mini-label,
+  .section-kicker,
+  .preview-label,
+  .field-label,
+  .small-label {
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    padding: 7px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(22,21,21,0.08);
+    background: rgba(255,255,255,0.75);
+  }
+
+  h1, h2, h3 {
+    margin: 0;
+    letter-spacing: -0.04em;
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  }
+
+  h1 {
+    max-width: 10ch;
+    margin-top: 14px;
+    font-size: clamp(2.8rem, 5vw, 5rem);
+    line-height: 0.9;
+  }
+
+  .hero p,
+  .panel-head p,
+  .reasoning-copy,
+  .preview-sub,
+  .metric-card span,
+  .selection-card p,
+  .font-card p,
+  .empty-state,
+  .status-copy,
+  .result-note {
+    color: var(--muted);
+    line-height: 1.68;
+  }
+
+  .hero-copy {
+    max-width: 62ch;
+    font-size: 17px;
+    margin: 14px 0 0;
+  }
+
+  .hero-points,
+  .font-meta,
+  .tag-row,
+  .action-row,
+  .selection-row,
+  .preview-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .hero-points { margin-top: 20px; }
+
+  .hero-side,
+  .stack {
+    display: grid;
+    gap: 14px;
+  }
+
+  .mini-card,
+  .panel,
+  .preview-card,
+  .selection-card,
+  .font-card,
+  .metric-card,
+  .story-card,
+  .result-card,
+  .empty-state,
+  .upload-box {
+    background: var(--surface-strong);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+  }
+
+  .mini-card,
+  .panel,
+  .selection-card,
+  .font-card,
+  .metric-card,
+  .story-card,
+  .result-card,
+  .empty-state,
+  .upload-box {
+    padding: 18px;
+  }
+
+  .mini-value {
+    display: block;
+    margin: 6px 0 8px;
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .main-grid {
+    margin-top: 20px;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.78fr);
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .panel-head h2 {
+    margin-top: 6px;
+    font-size: 2rem;
+    line-height: 0.96;
+  }
+
+  .control-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .control-card {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(22,21,21,0.09);
+    background: rgba(255,255,255,0.7);
+  }
+
+  .control-card.full {
+    grid-column: 1 / -1;
+  }
+
+  label,
+  .field {
+    display: grid;
+    gap: 8px;
+  }
+
+  input[type="search"],
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid rgba(22,21,21,0.12);
+    background: rgba(255,255,255,0.95);
+    color: var(--ink);
+  }
+
+  textarea {
+    min-height: 100px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    resize: vertical;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .range-row,
+  .color-row,
+  .font-pick-row,
+  .toggle-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .color-control {
+    display: grid;
+    gap: 8px;
+  }
+
+  .color-control input[type="color"] {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 16px;
+    border: 1px solid rgba(22,21,21,0.12);
+    padding: 4px;
+    background: rgba(255,255,255,0.95);
+  }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .scenario-card {
+    cursor: pointer;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(22,21,21,0.1);
+    background: rgba(255,255,255,0.72);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .scenario-card:hover,
+  .scenario-card.selected,
+  .font-card.selected-primary,
+  .font-card.selected-compare {
+    transform: translateY(-2px);
+  }
+
+  .scenario-card.selected {
+    border-color: rgba(255,106,61,0.35);
+    box-shadow: 0 14px 30px rgba(255,106,61,0.1);
+    background: linear-gradient(180deg, rgba(255,106,61,0.08), rgba(255,255,255,0.96));
+  }
+
+  .scenario-card strong,
+  .font-card strong,
+  .preview-text-display,
+  .result-card h3,
+  .selection-card h3,
+  .story-card h3 {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 18px;
+  }
+
+  .preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 18px;
+  }
+
+  .preview-card {
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(22,21,21,0.1);
+    min-height: 230px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .preview-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .preview-stage {
+    border-radius: 18px;
+    border: 1px solid rgba(22,21,21,0.08);
+    padding: 18px;
+    min-height: 150px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .preview-text-display {
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    margin: 0 0 12px;
+  }
+
+  .preview-text-body,
+  .preview-text-detail {
+    margin: 0 0 10px;
+    line-height: 1.55;
+  }
+
+  .preview-text-detail {
+    font-size: 13px;
+    opacity: 0.84;
+  }
+
+  .mode-lowlight .preview-stage {
+    background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 35%), linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.34));
+  }
+
+  .mode-blur .preview-stage,
+  .mode-blur .preview-stage * {
+    filter: blur(1.2px);
+  }
+
+  .mode-small .preview-text-body { font-size: 13px !important; }
+  .mode-small .preview-text-detail { font-size: 11px !important; }
+
+  .mode-palette .preview-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 40%);
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .status-approved { background: rgba(43, 141, 103, 0.12); color: #13684a; }
+  .status-rejected { background: rgba(202, 70, 43, 0.12); color: #ab3d27; }
+  .status-quarantined { background: rgba(178, 130, 40, 0.16); color: #826119; }
+  .status-neutral { background: rgba(22,21,21,0.08); color: var(--muted); }
+
+  button {
+    appearance: none;
+    min-height: 46px;
+    padding: 0 16px;
+    border: 1px solid rgba(22,21,21,0.12);
+    background: #fff9f3;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  button.primary {
+    color: white;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    font-weight: 700;
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .font-list {
+    display: grid;
+    gap: 12px;
+    max-height: 520px;
+    overflow: auto;
+    padding-right: 4px;
+  }
+
+  .font-card.selected-primary {
+    border-color: rgba(35, 138, 102, 0.3);
+    background: linear-gradient(180deg, rgba(35,138,102,0.08), rgba(255,255,255,0.98));
+  }
+
+  .font-card.selected-compare {
+    border-color: rgba(255,106,61,0.3);
+    background: linear-gradient(180deg, rgba(255,106,61,0.08), rgba(255,255,255,0.98));
+  }
+
+  .font-meta .chip,
+  .preview-tags .chip,
+  .tag-row .chip {
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .selection-grid,
+  .metric-grid,
+  .story-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .story-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .metric-card strong {
+    display: block;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin: 4px 0 8px;
+  }
+
+  .reasoning-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .json-box {
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #171a1f;
+    color: #f7f3ee;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 320px;
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+
+  .upload-box {
+    display: grid;
+    gap: 14px;
+  }
+
+  .empty-state {
+    min-height: 88px;
+    display: grid;
+    align-items: center;
+  }
+
+  @media (max-width: 1120px) {
+    .hero-grid,
+    .main-grid,
+    .reasoning-grid,
+    .metric-grid,
+    .story-grid,
+    .scenario-grid,
+    .preview-grid,
+    .control-grid,
+    .range-row,
+    .color-row,
+    .font-pick-row,
+    .toggle-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .shell { width: min(calc(100vw - 18px), var(--max)); }
+    .hero, .panel { padding: 18px; }
+    .topbar { flex-direction: column; align-items: start; }
+    h1 { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">T</div>
+      <div>TypeWeaver</div>
+    </div>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/tool.html">Tool</a>
+      <a href="/scenarios.html">Scenarios</a>
+      <a href="/examples.html">Examples</a>
+    </div>
+  </div>
+
+  <section class="card hero">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Tool</span>
+        <h1>Pick a font. Stress it live. Decide fast.</h1>
+        <p class="hero-copy">
+          Start with a Google Font that actually loads. Type your own phrase. Change size, palette, low light, and blur.
+          The page should answer the practical question first: does this font still work when conditions stop being ideal?
+        </p>
+        <div class="hero-points">
+          <span class="chip">Select a font</span>
+          <span class="chip">Type a phrase</span>
+          <span class="chip">Watch every state update live</span>
+        </div>
+      </div>
+      <aside class="hero-side">
+        <div class="mini-card">
+          <span class="mini-label">Primary job</span>
+          <span class="mini-value">See it</span>
+          <p>Live examples first. No report-reading before the font has proven it can survive.</p>
+        </div>
+        <div class="mini-card">
+          <span class="mini-label">Default motion</span>
+          <span class="mini-value">Compare</span>
+          <p>Bring in a second candidate when you want side-by-side reasoning below the previews.</p>
+        </div>
+        <div class="mini-card">
+          <span class="mini-label">Preferred path</span>
+          <span class="mini-value">Google Fonts</span>
+          <p>Search the public catalog, add one font, and start testing. Uploads stay available for advanced cases.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="main-grid">
+    <div class="stack">
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Live setup</span>
+            <h2>Choose the font. Set the phrase. Stress the page.</h2>
+            <p>Everything below updates immediately: font, phrase, size, palette, low light, blur, and scenario.</p>
+          </div>
+          <div class="status status-neutral" id="selectedScenarioCopy">Scenario: Everyday web</div>
+        </div>
+
+        <div class="control-grid">
+          <div class="control-card full">
+            <div class="font-pick-row">
+              <label>
+                <span class="field-label">Search Google Fonts</span>
+                <input type="search" id="publicFontSearchInput" placeholder="Inter, Roboto, IBM Plex Sans, Merriweather, Source Serif 4" autocomplete="off">
+              </label>
+              <label>
+                <span class="field-label">Current selection</span>
+                <select id="quickFontSelect">
+                  <option value="">Choose from your library</option>
+                </select>
+              </label>
+            </div>
+            <div class="action-row">
+              <button class="secondary" type="button" id="clearPublicFontSearchBtn">Clear search</button>
+              <span class="status-copy" id="publicFontMsg">Loading the public font catalog…</span>
+            </div>
+            <div class="font-list" id="publicFontResults">
+              <div class="empty-state">Loading public fonts…</div>
+            </div>
+          </div>
+
+          <div class="control-card full">
+            <label>
+              <span class="field-label">Phrase</span>
+              <textarea id="phraseInput">TypeWeaver shows whether a font stays readable when the screen gets dim, soft, or harsh.</textarea>
+            </label>
+            <div class="range-row">
+              <label>
+                <span class="field-label">Headline size</span>
+                <input type="range" id="sizeRange" min="28" max="120" value="64">
+                <span class="small-label" id="sizeValue">64px</span>
+              </label>
+              <label>
+                <span class="field-label">Body size</span>
+                <input type="range" id="bodySizeRange" min="12" max="28" value="18">
+                <span class="small-label" id="bodySizeValue">18px</span>
+              </label>
+            </div>
+            <div class="color-row">
+              <div class="color-control">
+                <span class="field-label">Foreground</span>
+                <input type="color" id="foregroundColorInput" value="#161515">
+              </div>
+              <div class="color-control">
+                <span class="field-label">Background</span>
+                <input type="color" id="backgroundColorInput" value="#fffaf4">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-head" style="margin-top:18px; margin-bottom:12px;">
+          <div>
+            <span class="section-kicker">Scenario</span>
+            <h2 style="font-size:1.5rem;">Pick the stress case</h2>
+            <p>The scenario changes the live examples first. The deeper reasoning stays below.</p>
+          </div>
+        </div>
+        <div class="scenario-grid" id="scenarioGrid"></div>
+
+        <div class="preview-grid" id="previewGrid">
+          <article class="preview-card mode-normal">
+            <div class="preview-head">
+              <div>
+                <span class="preview-label">Baseline</span>
+                <strong>Normal view</strong>
+              </div>
+              <div class="preview-tags"><span class="chip">Reference</span></div>
+            </div>
+            <div class="preview-stage">
+              <p class="preview-text-display"></p>
+              <p class="preview-text-body"></p>
+              <p class="preview-text-detail"></p>
+            </div>
+          </article>
+          <article class="preview-card mode-palette">
+            <div class="preview-head">
+              <div>
+                <span class="preview-label">Palette</span>
+                <strong>Chosen colors</strong>
+              </div>
+              <div class="preview-tags"><span class="chip">Live fg/bg</span></div>
+            </div>
+            <div class="preview-stage">
+              <p class="preview-text-display"></p>
+              <p class="preview-text-body"></p>
+              <p class="preview-text-detail"></p>
+            </div>
+          </article>
+          <article class="preview-card mode-lowlight">
+            <div class="preview-head">
+              <div>
+                <span class="preview-label">Low light</span>
+                <strong>Dimmer contrast</strong>
+              </div>
+              <div class="preview-tags"><span class="chip">Harder read</span></div>
+            </div>
+            <div class="preview-stage">
+              <p class="preview-text-display"></p>
+              <p class="preview-text-body"></p>
+              <p class="preview-text-detail"></p>
+            </div>
+          </article>
+          <article class="preview-card mode-blur mode-small">
+            <div class="preview-head">
+              <div>
+                <span class="preview-label">Break it</span>
+                <strong>Blur + small text</strong>
+              </div>
+              <div class="preview-tags"><span class="chip">Worst case</span></div>
+            </div>
+            <div class="preview-stage">
+              <p class="preview-text-display"></p>
+              <p class="preview-text-body"></p>
+              <p class="preview-text-detail"></p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Reasoning</span>
+            <h2>Then explain what the live examples mean</h2>
+            <p>Once the font is on the page, generate a report or compare two candidates. This belongs below the live states, not before them.</p>
+          </div>
+          <div class="action-row">
+            <button class="primary" type="button" id="runBenchBtn" disabled>Run report</button>
+            <button class="secondary" type="button" id="runCompareBtn" disabled>Compare two fonts</button>
+            <button class="secondary" type="button" id="clearCompareBtn" disabled>Clear compare</button>
+          </div>
+        </div>
+
+        <div class="reasoning-grid">
+          <div>
+            <div class="empty-state" id="reportEmpty">Pick a primary font, then run a report when you want the reasoning layer.</div>
+            <div id="reportView" style="display:none;">
+              <div class="metric-grid" id="metricGrid"></div>
+              <div class="story-grid" id="storyGrid" style="margin-top:12px;"></div>
+              <div class="json-box" id="reportJson"></div>
+            </div>
+          </div>
+          <div>
+            <div class="empty-state" id="compareEmpty">Set a comparison font from the library when you want a side-by-side call.</div>
+            <div id="compareView" style="display:none;">
+              <div class="stack" id="compareResultGrid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Advanced</span>
+            <h2>Upload your own font</h2>
+            <p>Custom files still work. But the default path should be Google Fonts first.</p>
+          </div>
+        </div>
+        <div class="upload-box">
+          <input type="file" id="fileInput" multiple accept=".ttf,.otf,.woff,.woff2">
+          <div class="action-row">
+            <button class="primary" type="button" id="uploadBtn" disabled>Upload and prepare</button>
+            <span class="status-copy" id="uploadMsg">Supported: .ttf, .otf, .woff, .woff2</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="stack">
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Selected now</span>
+            <h2>Current state</h2>
+            <p>What the page is actually testing.</p>
+          </div>
+        </div>
+        <div class="selection-grid" id="selectionSummary">
+          <div class="empty-state">No font selected yet.</div>
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">Library</span>
+            <h2>Your fonts</h2>
+            <p>Set one as primary. Set another for comparison if needed.</p>
+          </div>
+        </div>
+        <div class="font-list" id="registryList">
+          <div class="empty-state">Loading fonts…</div>
+        </div>
+      </section>
+    </aside>
+  </section>
+</main>
+
+<script>
+const scenarioDefinitions = {
+  web_light_default: {
+    title: "Everyday web",
+    description: "A calm baseline for normal product use on brighter screens.",
+    tags: ["baseline", "web", "reading"],
+    sampleBody: "This should stay calm and readable in the default case before we make life harder.",
+    detail: "O0 I l 1 · rn m · B8 · 12/17/2026 · NAV 104.28"
+  },
+  mobile_dark_low_contrast: {
+    title: "Phone on dark mode",
+    description: "Smaller text, darker UI, and less generous contrast.",
+    tags: ["mobile", "dark", "small text"],
+    sampleBody: "The font needs to hold shape when the interface gets darker, tighter, and more compressed.",
+    detail: "Alert 07 · queue 118 · retry 2 · id I1-08 · O0 gap"
+  },
+  ocr_scan_pressure: {
+    title: "OCR / scan pressure",
+    description: "Machine-read conditions where glyph distinction matters more than style.",
+    tags: ["OCR", "scan", "precision"],
+    sampleBody: "Camera blur, rough capture, and ambiguous glyphs punish type quickly.",
+    detail: "O0 I l 1 S5 B8 rn m cl d 8B0O1l"
+  },
+  dense_dashboard: {
+    title: "Dense dashboard",
+    description: "Tables, controls, labels, and numbers all competing in operational UI.",
+    tags: ["dashboard", "dense", "numbers"],
+    sampleBody: "Dashboards expose weak spacing and weak numerals faster than polished hero layouts do.",
+    detail: "GPU 87% · mem 31.8GB · node HZ-04 · p95 128ms · err 0.8%"
+  }
+};
+
+const scoreNarratives = [
+  { limit: 0.85, text: "Strong result. The font stays steady in this scenario." },
+  { limit: 0.65, text: "Good overall, but it starts to strain under pressure." },
+  { limit: 0.4, text: "Mixed result. Usable in places, but not reliably strong here." },
+  { limit: 0, text: "Fragile in this setting. The problems are visible." }
+];
+
+const publicFontSearchInput = document.getElementById("publicFontSearchInput");
+const quickFontSelect = document.getElementById("quickFontSelect");
+const clearPublicFontSearchBtn = document.getElementById("clearPublicFontSearchBtn");
+const publicFontMsg = document.getElementById("publicFontMsg");
+const publicFontResults = document.getElementById("publicFontResults");
+const registryList = document.getElementById("registryList");
+const selectionSummary = document.getElementById("selectionSummary");
+const selectedScenarioCopy = document.getElementById("selectedScenarioCopy");
+const phraseInput = document.getElementById("phraseInput");
+const sizeRange = document.getElementById("sizeRange");
+const sizeValue = document.getElementById("sizeValue");
+const bodySizeRange = document.getElementById("bodySizeRange");
+const bodySizeValue = document.getElementById("bodySizeValue");
+const foregroundColorInput = document.getElementById("foregroundColorInput");
+const backgroundColorInput = document.getElementById("backgroundColorInput");
+const runBenchBtn = document.getElementById("runBenchBtn");
+const runCompareBtn = document.getElementById("runCompareBtn");
+const clearCompareBtn = document.getElementById("clearCompareBtn");
+const reportEmpty = document.getElementById("reportEmpty");
+const reportView = document.getElementById("reportView");
+const metricGrid = document.getElementById("metricGrid");
+const storyGrid = document.getElementById("storyGrid");
+const reportJson = document.getElementById("reportJson");
+const compareEmpty = document.getElementById("compareEmpty");
+const compareView = document.getElementById("compareView");
+const compareResultGrid = document.getElementById("compareResultGrid");
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const uploadMsg = document.getElementById("uploadMsg");
+
+let currentScenario = "web_light_default";
+let latestRegistry = [];
+let latestPublicFonts = [];
+let currentFont = null;
+let compareFont = null;
+let selectedFiles = [];
+let publicFontSearchTimer = null;
+let publicFontSearchRequestId = 0;
+const loadedFontFaces = new Map();
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", "&#39;");
+}
+
+function formatBytes(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return bytes + ' B';
+}
+
+function titleCaseStatus(status) {
+  return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+}
+
+function statusClass(status) {
+  if (!status) return 'status-neutral';
+  return 'status-' + status;
+}
+
+function classifyScore(score) {
+  return scoreNarratives.find(entry => score >= entry.limit).text;
+}
+
+async function ensureFontFace(asset) {
+  if (!asset?.id) return;
+  if (loadedFontFaces.has(asset.id)) return loadedFontFaces.get(asset.id);
+  const family = `TW_${asset.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+  const fontFace = new FontFace(family, `url(/api/fonts/${encodeURIComponent(asset.id)}/file)`);
+  const loaded = fontFace.load().then(face => {
+    document.fonts.add(face);
+    return face.family;
+  }).catch(() => '');
+  loadedFontFaces.set(asset.id, loaded);
+  return loaded;
+}
+
+function activeScenario() {
+  return scenarioDefinitions[currentScenario] || scenarioDefinitions.web_light_default;
+}
+
+function selectedFamilyName() {
+  return currentFont ? `TW_${currentFont.id.replace(/[^a-zA-Z0-9_-]/g, '_')}, Inter, sans-serif` : 'Inter, sans-serif';
+}
+
+async function updateLivePreview() {
+  if (currentFont) await ensureFontFace(currentFont);
+  const scenario = activeScenario();
+  const display = (phraseInput.value || '').trim() || 'Type something real.';
+  const bodyText = scenario.sampleBody;
+  const detailText = scenario.detail;
+  const headingSize = Number(sizeRange.value);
+  const bodySize = Number(bodySizeRange.value);
+  const fg = foregroundColorInput.value;
+  const bg = backgroundColorInput.value;
+  sizeValue.textContent = `${headingSize}px`;
+  bodySizeValue.textContent = `${bodySize}px`;
+
+  document.querySelectorAll('.preview-card').forEach(card => {
+    const stage = card.querySelector('.preview-stage');
+    const displayNode = card.querySelector('.preview-text-display');
+    const bodyNode = card.querySelector('.preview-text-body');
+    const detailNode = card.querySelector('.preview-text-detail');
+    stage.style.background = bg;
+    stage.style.color = fg;
+    stage.style.fontFamily = selectedFamilyName();
+    displayNode.textContent = display;
+    bodyNode.textContent = bodyText;
+    detailNode.textContent = detailText;
+    displayNode.style.fontSize = `${headingSize}px`;
+    bodyNode.style.fontSize = `${bodySize}px`;
+    detailNode.style.fontFamily = selectedFamilyName();
+  });
+
+  const lowlightStage = document.querySelector('.mode-lowlight .preview-stage');
+  if (lowlightStage) {
+    lowlightStage.style.backgroundColor = bg;
+    lowlightStage.style.color = fg;
+    lowlightStage.style.opacity = '0.82';
+  }
+
+  renderSelectionSummary();
+}
+
+function updateButtons() {
+  runBenchBtn.disabled = !currentFont;
+  runCompareBtn.disabled = !(currentFont && compareFont);
+  clearCompareBtn.disabled = !compareFont;
+}
+
+function setPrimaryFont(asset) {
+  currentFont = asset || null;
+  if (compareFont && currentFont && compareFont.id === currentFont.id) compareFont = null;
+  renderRegistry(latestRegistry);
+  renderQuickFontSelect();
+  updateButtons();
+  updateLivePreview();
+}
+
+function setCompareFont(asset) {
+  if (!asset) compareFont = null;
+  else if (currentFont && asset.id === currentFont.id) compareFont = null;
+  else compareFont = asset;
+  renderRegistry(latestRegistry);
+  updateButtons();
+  renderSelectionSummary();
+}
+
+function renderScenarios() {
+  const grid = document.getElementById('scenarioGrid');
+  grid.innerHTML = Object.entries(scenarioDefinitions).map(([id, scenario]) => `
+    <article class="scenario-card ${id === currentScenario ? 'selected' : ''}" data-scenario="${id}">
+      <strong>${escapeHtml(scenario.title)}</strong>
+      <p>${escapeHtml(scenario.description)}</p>
+      <div class="tag-row">${scenario.tags.map(tag => `<span class="chip">${escapeHtml(tag)}</span>`).join('')}</div>
+    </article>
+  `).join('');
+
+  selectedScenarioCopy.textContent = `Scenario: ${activeScenario().title}`;
+  grid.querySelectorAll('.scenario-card').forEach(card => {
+    card.addEventListener('click', () => {
+      currentScenario = card.dataset.scenario;
+      renderScenarios();
+      updateLivePreview();
+    });
+  });
+}
+
+function renderQuickFontSelect() {
+  quickFontSelect.innerHTML = '<option value="">Choose from your library</option>' + latestRegistry.map(asset => `
+    <option value="${escapeHtml(asset.id)}" ${currentFont && currentFont.id === asset.id ? 'selected' : ''}>
+      ${escapeHtml(asset.family_name || asset.file_name)}
+    </option>
+  `).join('');
+}
+
+function renderSelectionSummary() {
+  const scenario = activeScenario();
+  selectionSummary.innerHTML = `
+    <div class="selection-card">
+      <h3>Primary font</h3>
+      ${currentFont ? `
+        <p><strong>${escapeHtml(currentFont.family_name || currentFont.file_name)}</strong></p>
+        <div class="font-meta">
+          <span class="chip">${escapeHtml(currentFont.id)}</span>
+          <span class="chip">${escapeHtml(currentFont.license_normalized)}</span>
+          <span class="chip">${escapeHtml(titleCaseStatus(currentFont.status))}</span>
+        </div>
+      ` : '<p>No primary font yet.</p>'}
+    </div>
+    <div class="selection-card">
+      <h3>Comparison font</h3>
+      ${compareFont ? `
+        <p><strong>${escapeHtml(compareFont.family_name || compareFont.file_name)}</strong></p>
+        <div class="font-meta">
+          <span class="chip">${escapeHtml(compareFont.id)}</span>
+          <span class="chip">${escapeHtml(compareFont.license_normalized)}</span>
+        </div>
+      ` : '<p>No comparison font set.</p>'}
+    </div>
+    <div class="selection-card">
+      <h3>Live settings</h3>
+      <p><strong>${escapeHtml(scenario.title)}</strong><br>${escapeHtml(scenario.description)}</p>
+      <div class="font-meta">
+        <span class="chip">Headline ${Number(sizeRange.value)}px</span>
+        <span class="chip">Body ${Number(bodySizeRange.value)}px</span>
+        <span class="chip">${foregroundColorInput.value} on ${backgroundColorInput.value}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderPublicFontResults(fonts) {
+  latestPublicFonts = fonts;
+  if (!fonts.length) {
+    publicFontResults.innerHTML = '<div class="empty-state">No public fonts matched that search.</div>';
+    return;
+  }
+  publicFontResults.innerHTML = fonts.map((font, index) => `
+    <article class="font-card">
+      <strong>${escapeHtml(font.family)}</strong>
+      <p>${escapeHtml(font.source === 'fallback_catalog' ? 'Built-in public catalog entry.' : 'Google Fonts catalog result.')}</p>
+      <div class="font-meta">
+        <span class="chip">${escapeHtml(font.category)}</span>
+        <span class="chip">${escapeHtml(font.license_hint)}</span>
+      </div>
+      <div class="action-row">
+        <button class="primary use-public-font-btn" type="button" data-public-font-index="${index}">Use this font</button>
+      </div>
+    </article>
+  `).join('');
+
+  publicFontResults.querySelectorAll('.use-public-font-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+      const font = latestPublicFonts[Number(button.dataset.publicFontIndex)];
+      if (!font) return;
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Adding…';
+      publicFontMsg.textContent = `Adding ${font.family}…`;
+      try {
+        const response = await fetch('/api/public-fonts/ingest', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ family: font.family, declared_license: font.declared_license })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Public font ingest failed');
+        await loadRegistry();
+        const asset = latestRegistry.find(candidate => candidate.id === payload.asset_id)
+          || latestRegistry.find(candidate => (candidate.family_name || '').toLowerCase() === font.family.toLowerCase());
+        if (asset) setPrimaryFont(asset);
+        publicFontMsg.textContent = `${font.family} is ready.`;
+      } catch (error) {
+        publicFontMsg.textContent = `Could not add ${font.family}: ${error.message}`;
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
+      }
+    });
+  });
+}
+
+async function searchPublicFonts(query = '') {
+  const requestId = ++publicFontSearchRequestId;
+  const trimmed = query.trim();
+  publicFontMsg.textContent = trimmed ? `Searching for “${trimmed}”…` : 'Loading public fonts…';
+  const params = new URLSearchParams();
+  if (trimmed) params.set('q', trimmed);
+  params.set('limit', trimmed ? '12' : '16');
+  try {
+    const response = await fetch(`/api/public-fonts?${params.toString()}`);
+    const payload = await response.json();
+    if (requestId !== publicFontSearchRequestId) return;
+    if (!response.ok) throw new Error(payload.error || 'Public font search failed');
+    renderPublicFontResults(payload.fonts || []);
+    if (payload.degraded) publicFontMsg.textContent = payload.note || 'Live catalog unavailable; showing fallback catalog.';
+    else publicFontMsg.textContent = trimmed ? `Results for “${trimmed}”.` : 'Pick a public font to get started.';
+  } catch (error) {
+    if (requestId !== publicFontSearchRequestId) return;
+    publicFontResults.innerHTML = '<div class="empty-state">Could not load public fonts right now.</div>';
+    publicFontMsg.textContent = `Public font search is unavailable: ${error.message}`;
+  }
+}
+
+function renderRegistry(assets) {
+  latestRegistry = assets;
+  if (!assets.length) {
+    registryList.innerHTML = '<div class="empty-state">No fonts yet. Add one from Google Fonts or upload a file.</div>';
+    currentFont = null;
+    compareFont = null;
+    renderQuickFontSelect();
+    renderSelectionSummary();
+    updateButtons();
+    return;
+  }
+  if (currentFont) currentFont = assets.find(asset => asset.id === currentFont.id) || null;
+  if (compareFont) compareFont = assets.find(asset => asset.id === compareFont.id) || null;
+
+  registryList.innerHTML = assets.map(asset => {
+    const primary = currentFont && currentFont.id === asset.id;
+    const compare = compareFont && compareFont.id === asset.id;
+    return `
+      <article class="font-card ${primary ? 'selected-primary' : ''} ${compare ? 'selected-compare' : ''}">
+        <strong>${escapeHtml(asset.family_name || asset.file_name)}</strong>
+        <p>${escapeHtml(asset.file_name)}</p>
+        <div class="font-meta">
+          <span class="chip">${escapeHtml(asset.license_normalized)}</span>
+          <span class="chip">${escapeHtml(formatBytes(asset.file_size_bytes))}</span>
+          <span class="status ${statusClass(asset.status)}">${escapeHtml(titleCaseStatus(asset.status))}</span>
+        </div>
+        <div class="action-row">
+          <button class="secondary set-primary-btn" type="button" data-font-id="${asset.id}">${primary ? 'Primary' : 'Set primary'}</button>
+          <button class="secondary set-compare-btn" type="button" data-font-id="${asset.id}" ${primary ? 'disabled' : ''}>${compare ? 'Comparison' : 'Set compare'}</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  registryList.querySelectorAll('.set-primary-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const asset = latestRegistry.find(candidate => candidate.id === button.dataset.fontId);
+      setPrimaryFont(asset || null);
+    });
+  });
+  registryList.querySelectorAll('.set-compare-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const asset = latestRegistry.find(candidate => candidate.id === button.dataset.fontId);
+      setCompareFont(asset || null);
+    });
+  });
+
+  renderQuickFontSelect();
+  renderSelectionSummary();
+  updateButtons();
+}
+
+async function loadRegistry() {
+  try {
+    const response = await fetch('/api/fonts');
+    const payload = await response.json();
+    renderRegistry(payload.assets || []);
+  } catch (error) {
+    registryList.innerHTML = `<div class="empty-state">Failed to load fonts: ${escapeHtml(error.message)}</div>`;
+  }
+}
+
+async function fetchReport(fontId) {
+  const response = await fetch(`/api/fonts/${fontId}/report?profile=${currentScenario}`);
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || 'Report failed');
+  return payload;
+}
+
+function renderReport(report) {
+  const scorePercent = Math.round(report.measurements.score * 100);
+  const coveragePercent = Math.round(report.measurements.estimated_coverage * 100);
+  const lineDensity = report.measurements.line_density.toFixed(1);
+  const confusion = report.measurements.confusion_penalty.toFixed(2);
+  metricGrid.innerHTML = `
+    <article class="metric-card"><span class="small-label">Overall</span><strong>${scorePercent}</strong><span>${escapeHtml(classifyScore(report.measurements.score))}</span></article>
+    <article class="metric-card"><span class="small-label">Coverage</span><strong>${coveragePercent}%</strong><span>How much of the current corpus the font appears to support.</span></article>
+    <article class="metric-card"><span class="small-label">Density</span><strong>${lineDensity}</strong><span>Compactness pressure under the selected profile.</span></article>
+    <article class="metric-card"><span class="small-label">Confusion risk</span><strong>${confusion}</strong><span>Lookalike pressure from glyph collisions.</span></article>
+  `;
+  storyGrid.innerHTML = `
+    <article class="story-card"><h3>Scenario</h3><p>${escapeHtml(activeScenario().description)}</p></article>
+    <article class="story-card"><h3>Why it scored this way</h3><p>${escapeHtml(report.measurements.notes)}</p></article>
+    <article class="story-card"><h3>What to do</h3><p>${escapeHtml(classifyScore(report.measurements.score))} Keep it if the live states also look right. Drop it if the previews already feel fragile.</p></article>
+  `;
+  reportJson.textContent = JSON.stringify(report, null, 2);
+  reportEmpty.style.display = 'none';
+  reportView.style.display = 'block';
+}
+
+function renderCompareCard(report, label) {
+  const scorePercent = Math.round(report.measurements.score * 100);
+  return `
+    <article class="result-card">
+      <h3>${escapeHtml(label)} — ${escapeHtml(report.font.family_name || report.font.font_id)}</h3>
+      <div class="font-meta">
+        <span class="chip">Score ${scorePercent}</span>
+        <span class="chip">Coverage ${Math.round(report.measurements.estimated_coverage * 100)}%</span>
+        <span class="chip">Confusion ${report.measurements.confusion_penalty.toFixed(2)}</span>
+      </div>
+      <p class="result-note">${escapeHtml(report.measurements.notes)}</p>
+    </article>
+  `;
+}
+
+runBenchBtn.addEventListener('click', async () => {
+  if (!currentFont) return;
+  reportEmpty.style.display = 'none';
+  reportView.style.display = 'block';
+  metricGrid.innerHTML = '<article class="metric-card"><span class="small-label">Running</span><strong>…</strong><span>Generating report.</span></article>';
+  storyGrid.innerHTML = '';
+  reportJson.textContent = 'Running report…';
+  try {
+    renderReport(await fetchReport(currentFont.id));
+  } catch (error) {
+    metricGrid.innerHTML = `<article class="metric-card"><span class="small-label">Error</span><strong>!</strong><span>${escapeHtml(error.message)}</span></article>`;
+    reportJson.textContent = 'Report failed.';
+  }
+});
+
+runCompareBtn.addEventListener('click', async () => {
+  if (!(currentFont && compareFont)) return;
+  compareEmpty.style.display = 'none';
+  compareView.style.display = 'block';
+  compareResultGrid.innerHTML = '<div class="empty-state">Running comparison…</div>';
+  try {
+    const [primaryReport, compareReport] = await Promise.all([
+      fetchReport(currentFont.id),
+      fetchReport(compareFont.id)
+    ]);
+    compareResultGrid.innerHTML = renderCompareCard(primaryReport, 'Primary') + renderCompareCard(compareReport, 'Comparison');
+  } catch (error) {
+    compareResultGrid.innerHTML = `<div class="empty-state">Comparison failed: ${escapeHtml(error.message)}</div>`;
+  }
+});
+
+clearCompareBtn.addEventListener('click', () => {
+  setCompareFont(null);
+  compareView.style.display = 'none';
+  compareEmpty.style.display = 'block';
+});
+
+quickFontSelect.addEventListener('change', () => {
+  const asset = latestRegistry.find(candidate => candidate.id === quickFontSelect.value);
+  if (asset) setPrimaryFont(asset);
+});
+
+publicFontSearchInput.addEventListener('input', () => {
+  clearPublicFontSearchBtn.disabled = publicFontSearchInput.value.trim().length === 0;
+  if (publicFontSearchTimer) clearTimeout(publicFontSearchTimer);
+  publicFontSearchTimer = setTimeout(() => searchPublicFonts(publicFontSearchInput.value), 140);
+});
+
+clearPublicFontSearchBtn.addEventListener('click', () => {
+  publicFontSearchInput.value = '';
+  clearPublicFontSearchBtn.disabled = true;
+  searchPublicFonts('');
+  publicFontSearchInput.focus();
+});
+
+[phraseInput, sizeRange, bodySizeRange, foregroundColorInput, backgroundColorInput].forEach(node => {
+  node.addEventListener('input', updateLivePreview);
+});
+
+fileInput.addEventListener('change', () => {
+  selectedFiles = Array.from(fileInput.files || []);
+  uploadBtn.disabled = selectedFiles.length === 0;
+  uploadMsg.textContent = selectedFiles.length ? selectedFiles.map(file => file.name).join(', ') : 'Supported: .ttf, .otf, .woff, .woff2';
+});
+
+uploadBtn.addEventListener('click', async () => {
+  if (!selectedFiles.length) return;
+  uploadBtn.disabled = true;
+  uploadMsg.textContent = 'Uploading fonts…';
+  const formData = new FormData();
+  selectedFiles.forEach(file => formData.append('file', file));
+  try {
+    const response = await fetch('/api/fonts/ingest', { method: 'POST', body: formData });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'Upload failed');
+    uploadMsg.textContent = `Added ${payload.ingested} font file(s).`;
+    selectedFiles = [];
+    fileInput.value = '';
+    await loadRegistry();
+  } catch (error) {
+    uploadMsg.textContent = `Upload failed: ${error.message}`;
+  } finally {
+    uploadBtn.disabled = selectedFiles.length === 0;
+  }
+});
+
+clearPublicFontSearchBtn.disabled = true;
+renderScenarios();
+searchPublicFonts('');
+loadRegistry().then(updateLivePreview);
+updateButtons();
+</script>
+</body>
+</html>

@@ -39,8 +39,7 @@ Secondary CTA:
 ### 2. What teams do today
 Keep this concrete and slightly naive:
 - Pick a font from a mockup or brand deck
-- Review a few clean strings
-- Approve it
+- Try a few clean strings
 - Ship it
 
 ### 3. Why that breaks
